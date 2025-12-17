@@ -47,7 +47,7 @@
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/your-username/creative-artist-game.git
+git clone https://github.com/fcfcfffc/creative-artist-game.git
 ```
 
 2. 进入项目目录
@@ -104,3 +104,4 @@ MIT License - 详见 [LICENSE](LICENSE) 文件
 
 
 **开始你的创意之旅吧！** 🎨✨
+
