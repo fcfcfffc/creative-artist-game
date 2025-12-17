@@ -29,7 +29,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/your-username/creative-artist-game.git
+git clone https://github.com/fcfcfffc/creative-artist-game.git
 cd creative-artist-game
 
 # 添加文件
@@ -52,7 +52,7 @@ git push origin main
 
 ### 4. 访问网站
 
-- 等待几分钟后，访问: `https://your-username.github.io/creative-artist-game`
+- 等待几分钟后，访问: `https://fcfcfffc.github.io/creative-artist-game`
 - GitHub 会显示部署状态，通常需要 1-5 分钟
 
 ## 其他部署选项
@@ -81,7 +81,7 @@ git push origin main
 
 1. 在仓库根目录创建 `CNAME` 文件
 2. 文件内容为你的域名，如: `game.yourdomain.com`
-3. 在域名提供商处设置 CNAME 记录指向: `your-username.github.io`
+3. 在域名提供商处设置 CNAME 记录指向: `fcfcfffc.github.io`
 
 ## 设备兼容性测试
 

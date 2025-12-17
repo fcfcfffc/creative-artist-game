@@ -122,11 +122,24 @@ const elements = {
 
 // 初始化游戏
 function initGame() {
+    console.log('开始初始化游戏');
+    
     // 检查用户登录状态
     loadUserState();
     
     // 始终显示用户信息
     updateUserDisplay();
+    
+    // 检查每日任务相关元素
+    console.log('检查每日任务元素:', {
+        dailyTaskModal: !!elements.dailyTaskModal,
+        dailyTaskBtn: !!elements.dailyTaskBtn,
+        dailyTaskArea: !!elements.dailyTaskArea,
+        dustParticles: !!elements.dustParticles,
+        dailyProgressFill: !!elements.dailyProgressFill,
+        dailyProgressText: !!elements.dailyProgressText,
+        skipDailyBtn: !!elements.skipDailyBtn
+    });
     
     // 确保登录弹窗正确显示/隐藏
     if (!userState.isLoggedIn) {
@@ -165,6 +178,15 @@ function initGame() {
     if (elements.workBtn) elements.workBtn.addEventListener('click', () => switchScreen('work'));
     if (elements.gachaNavBtn) elements.gachaNavBtn.addEventListener('click', () => switchScreen('gacha'));
     if (elements.galleryBtn) elements.galleryBtn.addEventListener('click', () => switchScreen('gallery'));
+    
+    // 手机端导航
+    const mobileWorkBtn = document.getElementById('mobile-work-btn');
+    const mobileGachaBtn = document.getElementById('mobile-gacha-nav-btn');
+    const mobileGalleryBtn = document.getElementById('mobile-gallery-btn');
+    
+    if (mobileWorkBtn) mobileWorkBtn.addEventListener('click', () => switchScreen('work'));
+    if (mobileGachaBtn) mobileGachaBtn.addEventListener('click', () => switchScreen('gacha'));
+    if (mobileGalleryBtn) mobileGalleryBtn.addEventListener('click', () => switchScreen('gallery'));
     
     // 宝箱点击效果
     if (elements.treasureChest) {
@@ -213,7 +235,7 @@ function initGame() {
 
 // 界面切换
 function switchScreen(screen) {
-    // 更新导航按钮状态
+    // 更新导航按钮状态 - 桌面端和手机端
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     
     // 隐藏所有界面
@@ -223,26 +245,70 @@ function switchScreen(screen) {
     const statusBar = document.querySelector('.status-bar');
     
     if (screen === 'work') {
-        elements.workBtn.classList.add('active');
+        if (elements.workBtn) elements.workBtn.classList.add('active');
+        const mobileWorkBtn = document.getElementById('mobile-work-btn');
+        if (mobileWorkBtn) mobileWorkBtn.classList.add('active');
         elements.workScreen.classList.add('active');
         // 设置状态栏透明 - 工作界面也透明
         if (statusBar) statusBar.classList.add('transparent');
     } else if (screen === 'gacha') {
-        elements.gachaNavBtn.classList.add('active');
+        if (elements.gachaNavBtn) elements.gachaNavBtn.classList.add('active');
+        const mobileGachaBtn = document.getElementById('mobile-gacha-nav-btn');
+        if (mobileGachaBtn) mobileGachaBtn.classList.add('active');
         elements.gachaScreen.classList.add('active');
         
         // 设置状态栏透明
         if (statusBar) statusBar.classList.add('transparent');
         
-        // 重置宝箱状态
-        elements.caseOpeningArea.classList.add('hidden');
-        elements.treasureChestArea.style.display = 'block';
+        // 重置宝箱状态并确保正确显示
+        resetGachaScreen();
     } else if (screen === 'gallery') {
-        elements.galleryBtn.classList.add('active');
+        if (elements.galleryBtn) elements.galleryBtn.classList.add('active');
+        const mobileGalleryBtn = document.getElementById('mobile-gallery-btn');
+        if (mobileGalleryBtn) mobileGalleryBtn.classList.add('active');
         elements.galleryScreen.classList.add('active');
         // 设置状态栏透明 - 展厅界面也透明
         if (statusBar) statusBar.classList.add('transparent');
         displayCollection();
+    }
+}
+
+// 重置宝箱界面状态
+function resetGachaScreen() {
+    // 隐藏开箱动画区域
+    if (elements.caseOpeningArea) {
+        elements.caseOpeningArea.classList.add('hidden');
+    }
+    
+    // 显示宝箱区域
+    if (elements.treasureChestArea) {
+        elements.treasureChestArea.style.display = 'flex';
+        elements.treasureChestArea.style.position = 'fixed';
+        elements.treasureChestArea.style.top = '0';
+        elements.treasureChestArea.style.left = '0';
+        elements.treasureChestArea.style.width = '100vw';
+        elements.treasureChestArea.style.height = '100vh';
+        elements.treasureChestArea.style.zIndex = '1';
+    }
+    
+    // 重置宝箱动画状态
+    if (elements.treasureChest) {
+        elements.treasureChest.style.animation = '';
+    }
+    if (elements.crateIcon) {
+        elements.crateIcon.style.animation = '';
+    }
+    if (elements.keyAnimation) {
+        elements.keyAnimation.style.display = 'none';
+    }
+    
+    // 重置开箱按钮
+    if (elements.gachaBtn) {
+        elements.gachaBtn.innerHTML = `
+            <span class="btn-icon">🔓</span>
+            <span class="btn-text">开启创意宝箱</span>
+        `;
+        elements.gachaBtn.disabled = gameState.tickets <= 0 || gameState.isOpening;
     }
 }
 
@@ -251,6 +317,11 @@ function updateUI() {
     elements.tickets.textContent = gameState.tickets;
     if (elements.keysCount) elements.keysCount.textContent = gameState.tickets;
     elements.clickCount.textContent = gameState.clickCount;
+    
+    // 更新手机端钥匙显示
+    const mobileTickets = document.getElementById('mobile-tickets');
+    if (mobileTickets) mobileTickets.textContent = gameState.tickets;
+    
     const progressPercent = (gameState.clickProgress / 100) * 100;
     if (elements.progressFillMini) {
         elements.progressFillMini.style.width = `${progressPercent}%`;
@@ -1032,19 +1103,7 @@ function showCardExpansion(cardElement, artwork) {
                         <span class="detail-value">${getThoughtType(artwork.rarity)}</span>
                     </div>
                 </div>
-                <div class="ai-inspiration-section">
-                    <button class="ai-inspiration-btn" onclick="generateAIInspiration('${artwork.rarity}', '${artwork.name}')">
-                        <span class="ai-icon">🤖</span>
-                        <span class="ai-text">生成AI创作方案</span>
-                    </button>
-                    <div class="ai-result" id="ai-result" style="display: none;">
-                        <div class="ai-loading">
-                            <span class="loading-icon">⚡</span>
-                            <span class="loading-text">AI正在思考创作方案...</span>
-                        </div>
-                        <div class="ai-content" id="ai-content"></div>
-                    </div>
-                </div>
+
             </div>
             <button class="close-expanded-btn" onclick="closeExpandedCard()">
                 <span>✕</span>
@@ -1076,14 +1135,17 @@ function showCardExpansion(cardElement, artwork) {
         if (isMobile) {
             expandedCardContent.style.cssText = `
                 position: fixed;
-                left: 10px;
-                top: 10px;
-                width: calc(100vw - 20px);
-                height: calc(100vh - 20px);
+                left: 5px;
+                top: 5px;
+                width: calc(100vw - 10px);
+                height: calc(100vh - 10px);
+                height: calc(var(--vh, 1vh) * 100 - 10px);
                 transform: scale(1);
                 transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                 z-index: 10000;
                 overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
             `;
         } else {
             expandedCardContent.style.cssText = `
@@ -1126,87 +1188,42 @@ function closeExpandedCard() {
 // 使函数全局可访问
 window.closeExpandedCard = closeExpandedCard;
 
-// AI创作方案生成
-function generateAIInspiration(rarity, artworkName) {
-    const aiResult = document.getElementById('ai-result');
-    const aiContent = document.getElementById('ai-content');
-    
-    if (!aiResult || !aiContent) return;
-    
-    // 显示加载状态
-    aiResult.style.display = 'block';
-    aiContent.innerHTML = '';
-    
-    // 模拟AI生成过程
-    setTimeout(() => {
-        const inspiration = getAIInspiration(rarity, artworkName);
-        
-        // 隐藏加载状态，显示结果
-        const loadingDiv = aiResult.querySelector('.ai-loading');
-        if (loadingDiv) loadingDiv.style.display = 'none';
-        
-        aiContent.innerHTML = `
-            <div class="ai-inspiration-content">
-                <h4>🎨 AI创作方案</h4>
-                <div class="inspiration-text">${inspiration}</div>
-                <div class="inspiration-tags">
-                    ${getInspirationTags(rarity).map(tag => `<span class="tag">${tag}</span>`).join('')}
-                </div>
-            </div>
-        `;
-    }, 2000); // 2秒模拟AI思考时间
-}
+// 测试函数 - 强制显示每日任务
+window.testDailyTask = function() {
+    console.log('强制测试每日任务');
+    // 重置用户状态，强制显示任务
+    userState.lastDailyTask = null;
+    showDailyTaskModal();
+};
 
-// 根据稀有度生成不同的AI创作方案
-function getAIInspiration(rarity, artworkName) {
-    const inspirations = {
-        common: [
-            "简约线条",
-            "色彩对比",
-            "几何构图",
-            "光影效果",
-            "质感表现"
-        ],
-        rare: [
-            "探索光影变化，运用明暗对比营造深度立体感。",
-            "结合传统与现代，在经典创新间找到平衡点。",
-            "通过纹理质感对比丰富画面，让观者感受材质触感。",
-            "运用渐变色彩表现情感层次，创造戏剧性视觉体验。"
-        ],
-        epic: [
-            "创造充满想象力的世界，将现实与幻想巧妙融合。运用超现实主义手法，让不可能成为可能。探索色彩的情感表达力，通过色彩心理学引导观者情绪体验。构建复杂和谐的构图，运用黄金比例和对称美学，让每个元素都有存在意义。",
-            "深入研究光线与阴影的相互作用，创造层次丰富的视觉深度。结合多种绘画技法，从古典写实到现代抽象，形成独特的艺术语言。注重细节处理，每一笔都要有目的性，传达特定的情感或概念。",
-            "运用色彩心理学原理，通过冷暖色调的对比营造情感张力。构图采用动态平衡，避免过于静态的布局。融入象征性元素，让作品具有多层次的解读空间。注重材质表现，展现不同物体的质感差异。"
-        ],
-        legendary: [
-            "突破传统艺术边界，融合多种媒介和技法创造前所未有的视觉语言。深入探索人性复杂面，通过象征主义表达深层哲学思考。运用时间空间概念，创造四维艺术体验，让观者在不同角度时刻发现新细节。结合科技与传统，在数字化时代重新定义艺术表达方式。每一笔都承载深刻内涵，形成完整的思想体系。构建多重叙事层次，让作品具有史诗般的宏大格局。",
-            "创造跨越文化边界的普世艺术语言，融合东西方美学精髓。运用光学原理和视觉心理学，营造超越现实的感知体验。构建复杂的符号系统，每个元素都有其深层含义。探索材料的极限可能性，创新使用传统和现代媒介。注重作品的时间性，让其在不同历史时期都能产生共鸣。建立独特的色彩理论体系，超越传统色彩搭配规则。"
-        ],
-        mythic: [
-            "创造能够改变世界认知的革命性作品，挑战既有艺术范式成为新时代开端。融合科学哲学艺术于一体，创造跨越学科的终极表达，让艺术成为连接宇宙真理的桥梁。超越人类感知极限，创造只有在梦境中才能存在的奇迹，重新定义美的概念。运用量子物理学和意识哲学原理，探索现实与虚拟的边界。构建多维度的艺术空间，让观者体验超越三维的美学感受。创造能够影响人类集体无意识的原型符号，触及最深层的精神共鸣。融合古代智慧与未来科技，预见艺术发展的终极形态。建立全新的美学理论体系，为后世艺术家指明方向。每一个创作元素都承载着改变世界的力量，形成完整的宇宙观表达。",
-            "开创前所未有的艺术维度，将时间空间意识融为一体的终极创作。运用混沌理论和分形几何，创造无限复杂而又完美和谐的视觉结构。探索人工智能与人类创造力的完美结合，预示未来艺术的进化方向。构建能够自我进化的艺术作品，随着观者的参与而不断变化发展。融合生物学神经科学和量子力学，创造能够直接作用于大脑神经的艺术体验。建立跨越物种的美学共识，让艺术成为宇宙间智慧生命的共同语言。每一笔都蕴含着宇宙的奥秘，形成连接过去现在未来的时空桥梁。"
-        ]
-    };
+// 调试函数 - 检查每日任务元素
+window.debugDailyTask = function() {
+    console.log('每日任务调试信息:', {
+        dailyTaskModal: elements.dailyTaskModal,
+        dailyTaskBtn: elements.dailyTaskBtn,
+        dailyTaskArea: elements.dailyTaskArea,
+        dustParticles: elements.dustParticles,
+        dailyProgressFill: elements.dailyProgressFill,
+        dailyProgressText: elements.dailyProgressText,
+        skipDailyBtn: elements.skipDailyBtn,
+        userState: userState,
+        dailyTaskState: dailyTaskState
+    });
     
-    const rarityInspirations = inspirations[rarity] || inspirations.common;
-    return rarityInspirations[Math.floor(Math.random() * rarityInspirations.length)];
-}
+    if (elements.dailyTaskModal) {
+        console.log('弹窗当前状态:', {
+            classList: elements.dailyTaskModal.classList.toString(),
+            style: elements.dailyTaskModal.style.cssText,
+            display: getComputedStyle(elements.dailyTaskModal).display
+        });
+    }
+};
 
-// 根据稀有度生成相关标签
-function getInspirationTags(rarity) {
-    const tags = {
-        common: ['简约'],
-        rare: ['光影', '质感', '情感', '融合'],
-        epic: ['想象力', '超现实', '色彩心理', '构图美学', '视觉深度'],
-        legendary: ['跨界创新', '哲学思考', '象征主义', '四维艺术', '多重叙事', '史诗格局'],
-        mythic: ['革命性', '跨学科', '超越感知', '宇宙真理', '量子美学', '意识哲学', '集体无意识', '时空桥梁']
-    };
-    
-    return tags[rarity] || tags.common;
-}
 
-// 使AI生成函数全局可访问
-window.generateAIInspiration = generateAIInspiration;
+
+
+
+
 
 // 获取思维类型
 function getThoughtType(rarity) {
@@ -1223,23 +1240,35 @@ function getThoughtType(rarity) {
 // 显示通知
 function showNotification(message) {
     const notification = document.createElement('div');
+    const isMobileDevice = window.innerWidth <= 768;
+    
     notification.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
+        top: ${isMobileDevice ? '50%' : '20px'};
+        left: ${isMobileDevice ? '50%' : 'auto'};
+        right: ${isMobileDevice ? 'auto' : '20px'};
+        transform: ${isMobileDevice ? 'translate(-50%, -50%)' : 'none'};
         background: #4CAF50;
         color: white;
         padding: 15px 20px;
-        border-radius: 8px;
-        z-index: 1001;
+        border-radius: 12px;
+        z-index: 10001;
         animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        font-size: ${isMobileDevice ? '16px' : '16px'};
+        text-align: center;
+        backdrop-filter: blur(10px);
+        max-width: ${isMobileDevice ? '280px' : '300px'};
+        word-wrap: break-word;
     `;
     notification.textContent = message;
     document.body.appendChild(notification);
     
     setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 4000); // 延长显示时间到4秒
 }
 
 // 保存游戏状态
@@ -1390,25 +1419,32 @@ function getTodayString() {
 function checkDailyTask() {
     const today = getTodayString();
     
-    if (userState.lastDailyTask !== today) {
-        // 今天还没完成每日任务，显示提示
-        if (elements.dailyTaskBtn) {
+    // 确保每日任务按钮存在并可见
+    if (elements.dailyTaskBtn) {
+        elements.dailyTaskBtn.style.display = 'flex';
+        
+        if (userState.lastDailyTask !== today) {
+            // 今天还没完成每日任务，显示提示
             elements.dailyTaskBtn.classList.add('has-reward');
-        }
-        // 自动弹出每日任务
-        setTimeout(() => {
-            showDailyTaskModal();
-        }, 500);
-    } else {
-        // 今天已完成
-        if (elements.dailyTaskBtn) {
+            // 自动弹出每日任务
+            setTimeout(() => {
+                showDailyTaskModal();
+            }, 1000); // 延长到1秒，确保界面完全加载
+        } else {
+            // 今天已完成
             elements.dailyTaskBtn.classList.remove('has-reward');
         }
+    }
+    
+    // 确保用户信息面板可见
+    if (elements.userInfo) {
+        elements.userInfo.style.display = 'flex';
     }
 }
 
 // 显示每日任务弹窗
 function showDailyTaskModal() {
+    console.log('显示每日任务弹窗被调用');
     const today = getTodayString();
     
     if (userState.lastDailyTask === today) {
@@ -1416,25 +1452,70 @@ function showDailyTaskModal() {
         return;
     }
     
+    // 检查DOM元素是否存在
+    if (!elements.dailyTaskModal) {
+        console.error('每日任务弹窗元素未找到');
+        // 尝试重新获取元素
+        elements.dailyTaskModal = document.getElementById('daily-task-modal');
+        if (!elements.dailyTaskModal) {
+            console.error('重新获取后仍未找到每日任务弹窗元素');
+            return;
+        }
+    }
+    
+    if (!elements.dustParticles) {
+        console.error('灰尘粒子容器未找到');
+        // 尝试重新获取元素
+        elements.dustParticles = document.getElementById('dust-particles');
+        if (!elements.dustParticles) {
+            console.error('重新获取后仍未找到灰尘粒子容器');
+            return;
+        }
+    }
+    
+    console.log('开始重置任务状态');
     // 重置任务状态
     dailyTaskState.dustCleaned = 0;
     dailyTaskState.isCompleted = false;
     
     // 生成灰尘
+    console.log('生成灰尘');
     generateDust();
     
     // 更新进度显示
+    console.log('更新进度显示');
     updateDailyProgress();
     
-    if (elements.dailyTaskModal) {
-        elements.dailyTaskModal.classList.remove('hidden');
-    }
+    // 显示弹窗 - 确保弹窗可见
+    console.log('显示弹窗');
+    elements.dailyTaskModal.classList.remove('hidden');
+    elements.dailyTaskModal.style.display = 'flex';
+    elements.dailyTaskModal.style.visibility = 'visible';
+    elements.dailyTaskModal.style.opacity = '1';
+    
+    // 确保弹窗在最顶层
+    elements.dailyTaskModal.style.zIndex = '10001';
+    
+    console.log('每日任务弹窗应该已显示');
+    
+    // 验证弹窗是否真的显示了
+    setTimeout(() => {
+        const computedStyle = getComputedStyle(elements.dailyTaskModal);
+        console.log('弹窗显示验证:', {
+            display: computedStyle.display,
+            visibility: computedStyle.visibility,
+            opacity: computedStyle.opacity,
+            zIndex: computedStyle.zIndex
+        });
+    }, 100);
 }
 
 // 隐藏每日任务弹窗
 function hideDailyTaskModal() {
+    console.log('隐藏每日任务弹窗');
     if (elements.dailyTaskModal) {
         elements.dailyTaskModal.classList.add('hidden');
+        elements.dailyTaskModal.style.display = 'none';
     }
 }
 
@@ -1444,26 +1525,39 @@ function generateDust() {
     
     elements.dustParticles.innerHTML = '';
     
-    for (let i = 0; i < dailyTaskState.totalDust; i++) {
+    // 根据设备调整灰尘数量和大小
+    const isMobileDevice = window.innerWidth <= 768;
+    const dustCount = isMobileDevice ? 15 : 20; // 手机端减少灰尘数量
+    const baseSize = isMobileDevice ? 20 : 25; // 手机端稍小的基础大小
+    
+    for (let i = 0; i < dustCount; i++) {
         const dust = document.createElement('div');
         dust.className = 'dust';
         dust.style.left = `${Math.random() * 80 + 10}%`;
-        dust.style.top = `${Math.random() * 65 + 15}%`;
+        dust.style.top = `${Math.random() * 70 + 15}%`;
         dust.style.animationDelay = `${Math.random() * 2}s`;
         
-        // 更大的点击区域
-        const size = Math.random() * 20 + 25; // 增大到25-45px
+        // 根据设备调整大小
+        const size = Math.random() * 15 + baseSize;
         dust.style.width = `${size}px`;
         dust.style.height = `${size}px`;
         
-        // 增大点击区域的padding
-        dust.style.padding = '10px';
-        dust.style.margin = '-10px';
+        // 增大点击区域
+        dust.style.padding = isMobileDevice ? '15px' : '10px';
+        dust.style.margin = isMobileDevice ? '-15px' : '-10px';
         
+        // 添加触摸事件支持
         dust.addEventListener('click', () => cleanDust(dust));
+        dust.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            cleanDust(dust);
+        });
         
         elements.dustParticles.appendChild(dust);
     }
+    
+    // 更新总数
+    dailyTaskState.totalDust = dustCount;
 }
 
 // 清扫灰尘
@@ -1527,8 +1621,16 @@ function completeDailyTask() {
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        from { 
+            transform: translateY(-20px); 
+            opacity: 0; 
+            scale: 0.9;
+        }
+        to { 
+            transform: translateY(0); 
+            opacity: 1; 
+            scale: 1;
+        }
     }
     
     @keyframes glow {
@@ -2013,10 +2115,14 @@ function preloadCriticalResources() {
         <div class="paint-stroke"></div>
         <div class="case-item"></div>
         <div class="artwork-item"></div>
+        <div class="dust"></div>
     `;
     document.body.appendChild(preloadDiv);
     
+    // 清理预加载元素
     setTimeout(() => {
-        document.body.removeChild(preloadDiv);
+        if (preloadDiv.parentNode) {
+            preloadDiv.parentNode.removeChild(preloadDiv);
+        }
     }, 100);
 }

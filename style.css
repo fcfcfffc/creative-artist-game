@@ -44,7 +44,7 @@ body {
     margin-right: 8px;
 }
 
-/* 状态栏 */
+/* 状态栏 - 隐藏在手机端 */
 .status-bar {
     position: fixed;
     top: 0;
@@ -59,6 +59,22 @@ body {
     z-index: 9999;
     backdrop-filter: blur(15px);
     transition: all 0.3s ease;
+}
+
+/* 手机端隐藏状态栏 */
+@media (max-width: 768px) {
+    .status-bar {
+        display: none !important;
+    }
+    
+    /* 手机端显示钥匙和导航 */
+    .mobile-keys-display {
+        display: flex !important;
+    }
+    
+    .mobile-nav-buttons {
+        display: flex !important;
+    }
 }
 
 .status-content {
@@ -157,6 +173,13 @@ body:has(.status-bar.transparent) .user-info .user-name {
     display: none;
     min-height: 100vh;
     padding-top: 0;
+}
+
+/* 手机端移除顶部间距 */
+@media (max-width: 768px) {
+    .screen {
+        padding-top: 0 !important;
+    }
 }
 
 .screen.active {
@@ -1804,14 +1827,17 @@ body:has(.status-bar.transparent) .user-info .user-name {
 }
 
 .treasure-chest-fullscreen {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 0 20px;
+    z-index: 1;
 }
 
 .crate-center {
@@ -1820,7 +1846,8 @@ body:has(.status-bar.transparent) .user-info .user-name {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
+    flex: 1;
+    width: 100%;
 }
 
 /* Icon风格宝箱 */
@@ -2480,9 +2507,36 @@ body:has(.status-bar.transparent) .user-info .user-name {
     
     .canvas-info-panel {
         right: 15px;
-        top: 90px;
-        min-width: 180px;
-        padding: 20px;
+        top: 60px;
+        min-width: 160px;
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    .info-item {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .info-icon {
+        font-size: 16px !important;
+    }
+    
+    .buy-premium-btn {
+        padding: 12px 14px !important;
+        font-size: 12px !important;
+    }
+    
+    .buy-premium-btn .btn-icon {
+        font-size: 14px !important;
+    }
+    
+    .buy-premium-btn .btn-text {
+        font-size: 11px !important;
+    }
+    
+    .buy-premium-btn .btn-desc {
+        font-size: 9px !important;
     }
     
     .canvas-hint {
@@ -2570,6 +2624,13 @@ body:has(.status-bar.transparent) .user-info .user-name {
         margin: 10px;
         max-height: 90vh;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 确保模态框内容可滚动 */
+    .modal {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -2604,6 +2665,61 @@ body:has(.status-bar.transparent) .user-info .user-name {
         max-width: 600px !important;
         height: auto !important;
         max-height: 80vh !important;
+    }
+}
+
+/* 手机端展开卡片优化 */
+@media (max-width: 768px) {
+    .expanded-card-content {
+        border-radius: 10px !important;
+        margin: 0 !important;
+    }
+    
+    .expanded-card-header {
+        padding: 20px 15px !important;
+    }
+    
+    .expanded-card-body {
+        padding: 15px !important;
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .expanded-icon {
+        font-size: 40px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    .expanded-title {
+        font-size: 20px !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .ai-inspiration-section {
+        margin-top: 15px !important;
+        padding-top: 15px !important;
+    }
+    
+    .ai-result {
+        margin-top: 10px !important;
+        padding: 15px !important;
+        max-height: 200px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .inspiration-text {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+    }
+    
+    .close-expanded-btn {
+        top: 10px !important;
+        right: 10px !important;
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 16px !important;
     }
 }
 
@@ -2675,13 +2791,83 @@ body:has(.status-bar.transparent) .user-info .user-name {
     display: flex !important;
     align-items: center;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    padding: 10px 15px;
     border-radius: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     z-index: 10000;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    pointer-events: auto;
+}
+
+/* 手机端用户信息适配 */
+@media (max-width: 768px) {
+    .user-info {
+        top: 70px;
+        left: 15px;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .user-name {
+        color: rgba(255, 255, 255, 0.9);
+        max-width: 150px;
+        font-size: 12px;
+    }
+    
+    .daily-task-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+}
+
+/* 手机端钥匙显示组件 */
+.mobile-keys-display {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
+    padding: 10px 15px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    pointer-events: auto;
+}
+
+.mobile-keys-display .currency-icon {
+    font-size: 16px;
+}
+
+.mobile-keys-display .currency-value {
+    font-weight: bold;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 手机端导航按钮组 */
+.mobile-nav-buttons {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(15px);
+    padding: 12px 25px;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .user-avatar {
@@ -2690,12 +2876,13 @@ body:has(.status-bar.transparent) .user-info .user-name {
 
 .user-name {
     font-weight: 600;
-    color: #333;
+    color: rgba(255, 255, 255, 0.9);
     max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 14px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .daily-task-btn {
@@ -2719,6 +2906,231 @@ body:has(.status-bar.transparent) .user-info .user-name {
 }
 
 .daily-task-btn.has-reward::after {
+    content: '!';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* 每日任务弹窗样式 */
+.daily-content {
+    max-width: 500px;
+    width: 90%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+}
+
+.daily-header {
+    margin-bottom: 25px;
+}
+
+.daily-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.daily-header h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.daily-header p {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.daily-reward {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.reward-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.reward-icon {
+    font-size: 32px;
+}
+
+.reward-amount {
+    font-size: 32px;
+    font-weight: bold;
+    color: #f1c40f;
+}
+
+.reward-text {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 0;
+}
+
+.daily-task-area {
+    position: relative;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    cursor: crosshair;
+}
+
+.dust-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.dust {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: rgba(139, 69, 19, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    animation: dustFloat 3s ease-in-out infinite;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dust:hover {
+    transform: scale(1.2);
+    background: rgba(139, 69, 19, 1);
+}
+
+.dust.cleaned {
+    animation: dustClean 0.5s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes dustFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes dustClean {
+    0% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% { 
+        transform: scale(0) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+.daily-progress {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.daily-progress-bar {
+    flex: 1;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.daily-progress-fill {
+    height: 100%;
+    background: linear-gradient(45deg, #27ae60, #2ecc71);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 6px;
+}
+
+#daily-progress-text {
+    font-weight: bold;
+    font-size: 16px;
+    min-width: 50px;
+}
+
+.skip-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.skip-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 手机端每日任务适配 */
+@media (max-width: 768px) {
+    .daily-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .daily-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    
+    .daily-header h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+    
+    .daily-header p {
+        font-size: 14px;
+    }
+    
+    .daily-task-area {
+        height: 150px;
+    }
+    
+    .dust {
+        width: 25px;
+        height: 25px;
+    }
+    
+    .reward-icon, .reward-amount {
+        font-size: 24px;
+    }
+    
+    .reward-text {
+        font-size: 12px;
+    }
+}ter {
     content: '!';
     position: absolute;
     top: -5px;
@@ -2842,39 +3254,9 @@ body:has(.status-bar.transparent) .user-info .user-name {
     font-size: 13px;
 }
 
-/* 每日任务弹窗样式 */
-.daily-content {
-    max-width: 450px;
-    padding: 30px;
-}
 
-.daily-header {
-    text-align: center;
-    margin-bottom: 25px;
-}
 
-.daily-icon {
-    font-size: 50px;
-    display: block;
-    margin-bottom: 10px;
-    animation: sweep 1s ease-in-out infinite;
-}
 
-@keyframes sweep {
-    0%, 100% { transform: rotate(-15deg); }
-    50% { transform: rotate(15deg); }
-}
-
-.daily-header h2 {
-    font-size: 22px;
-    color: #333;
-    margin-bottom: 8px;
-}
-
-.daily-header p {
-    color: #666;
-    font-size: 14px;
-}
 
 .daily-reward {
     text-align: center;
@@ -3416,14 +3798,35 @@ body:has(.status-bar.transparent) .user-info .user-name {
 @media (max-width: 768px) {
     .user-info {
         left: 10px;
-        top: 70px;
+        top: 10px;
         padding: 6px 12px;
         display: flex !important;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
     }
     
     .user-name {
-        max-width: 180px;
-        font-size: 12px;
+        max-width: 150px;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.95);
+    }
+    
+    /* 显示手机端专用组件 */
+    .mobile-keys-display {
+        display: flex !important;
+    }
+    
+    .mobile-nav-buttons {
+        display: flex !important;
+    }
+    
+    /* 隐藏桌面端导航 */
+    .nav-buttons {
+        display: none !important;
+    }
+    
+    .currency-display {
+        display: none !important;
     }
     
     .status-bar {
@@ -3452,6 +3855,32 @@ body:has(.status-bar.transparent) .user-info .user-name {
     
     .daily-task-area {
         height: 150px;
+    }
+    
+    /* 每日任务手机端优化 */
+    .daily-content {
+        max-width: 95% !important;
+        padding: 20px !important;
+        margin: 10px !important;
+        max-height: 90vh !important;
+        overflow-y: auto !important;
+    }
+    
+    .daily-reward {
+        padding: 15px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    .reward-display {
+        margin-bottom: 8px !important;
+    }
+    
+    .reward-icon {
+        font-size: 30px !important;
+    }
+    
+    .reward-amount {
+        font-size: 28px !important;
     }
     
     .payment-options {
@@ -3501,19 +3930,27 @@ body:has(.status-bar.transparent) .user-info .user-name {
     }
     
     .package-showcase {
-        padding: 20px;
+        padding: 15px;
     }
     
     .package-icon {
-        font-size: 40px;
+        font-size: 30px;
     }
     
     .package-amount {
-        font-size: 24px;
+        font-size: 18px;
     }
     
     .package-price {
-        font-size: 20px;
+        font-size: 16px;
+    }
+    
+    .package-title {
+        font-size: 16px !important;
+    }
+    
+    .package-value {
+        font-size: 12px !important;
     }
     
     .package-item {
@@ -3667,6 +4104,8 @@ body:has(.status-bar.transparent) .user-info .user-name {
     border: 2px solid rgba(138, 43, 226, 0.5);
     overflow: hidden;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .expanded-card-header {
@@ -3698,6 +4137,9 @@ body:has(.status-bar.transparent) .user-info .user-name {
 
 .expanded-card-body {
     padding: 25px 30px;
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .expanded-details {

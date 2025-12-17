@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终每日任务测试</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 用户信息显示 -->
+    <div class="user-info" id="user-info">
+        <span class="user-avatar">👤</span>
+        <span class="user-name" id="user-name">测试用户</span>
+        <button class="daily-task-btn has-reward" id="daily-task-btn" title="每日任务">
+            <span>🧹</span>
+        </button>
+    </div>
+
+    <!-- 手机端钥匙显示 -->
+    <div class="mobile-keys-display" id="mobile-keys-display">
+        <span class="currency-icon">🗝️</span>
+        <span class="currency-value" id="mobile-tickets">3</span>
+    </div>
+
+    <div style="padding: 20px; margin-top: 80px;">
+        <h1>最终每日任务测试</h1>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="window.testDailyTask()" style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px;">
+                强制显示每日任务
+            </button>
+            <button onclick="window.debugDailyTask()" style="padding: 15px 30px; background: #e74c3c; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px;">
+                调试信息
+            </button>
+            <button onclick="resetDailyTask()" style="padding: 15px 30px; background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px;">
+                重置每日任务
+            </button>
+        </div>
+        
+        <div id="debug-info" style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 20px 0; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;">
+            <h4>调试信息:</h4>
+            <div id="debug-content">等待测试...</div>
+        </div>
+    </div>
+
+    <!-- 每日任务弹窗 -->
+    <div id="daily-task-modal" class="modal hidden">
+        <div class="modal-content daily-content">
+            <div class="daily-header">
+                <span class="daily-icon">🧹</span>
+                <h2>每日打扫任务</h2>
+                <p>整理思维空间，获得丰厚奖励！</p>
+            </div>
+            <div class="daily-reward">
+                <div class="reward-display">
+                    <span class="reward-icon">🗝️</span>
+                    <span class="reward-amount">×5</span>
+                </div>
+                <p class="reward-text">完成任务可获得5把创意钥匙</p>
+            </div>
+            <div class="daily-task-area" id="daily-task-area">
+                <div class="dust-particles" id="dust-particles">
+                    <!-- 灰尘粒子将通过JS生成 -->
+                </div>
+            </div>
+            <div class="daily-progress">
+                <div class="daily-progress-bar">
+                    <div id="daily-progress-fill" class="daily-progress-fill"></div>
+                </div>
+                <span id="daily-progress-text">0/20</span>
+            </div>
+            <button id="skip-daily-btn" class="skip-button">跳过</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function log(message) {
+            const debugContent = document.getElementById('debug-content');
+            const time = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `<div>[${time}] ${message}</div>`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+            console.log(message);
+        }
+
+        function resetDailyTask() {
+            log('重置每日任务状态');
+            userState.lastDailyTask = null;
+            dailyTaskState.dustCleaned = 0;
+            dailyTaskState.isCompleted = false;
+            
+            if (elements.dailyTaskBtn) {
+                elements.dailyTaskBtn.classList.add('has-reward');
+            }
+            
+            log('每日任务状态已重置，可以重新触发');
+        }
+
+        // 重写console.log来显示在页面上
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            log(args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            log('ERROR: ' + args.join(' '));
+        };
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('页面加载完成，开始初始化游戏');
+            
+            // 确保用户已登录
+            userState.isLoggedIn = true;
+            userState.username = '测试用户';
+            
+            // 重置每日任务状态以便测试
+            userState.lastDailyTask = null;
+            
+            log('用户状态设置完成，开始检查每日任务');
+            
+            // 延迟一点时间确保DOM完全加载
+            setTimeout(() => {
+                checkDailyTask();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

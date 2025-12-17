@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日任务测试</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>每日任务功能测试</h1>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="testShowModal()" style="padding: 15px 30px; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px;">
+                显示每日任务弹窗
+            </button>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <h3>用户信息测试:</h3>
+            <div class="user-info" style="position: relative; display: flex; margin: 10px 0;">
+                <span class="user-avatar">👤</span>
+                <span class="user-name">测试用户</span>
+                <button class="daily-task-btn has-reward" onclick="testShowModal()">
+                    <span>🧹</span>
+                </button>
+            </div>
+        </div>
+        
+        <div id="debug-info" style="background: #f0f0f0; padding: 15px; border-radius: 10px; margin: 20px 0; font-family: monospace; font-size: 12px;">
+            <h4>调试信息:</h4>
+            <div id="debug-content">等待测试...</div>
+        </div>
+    </div>
+
+    <!-- 每日任务弹窗 -->
+    <div id="daily-task-modal" class="modal hidden">
+        <div class="modal-content daily-content">
+            <div class="daily-header">
+                <span class="daily-icon">🧹</span>
+                <h2>每日打扫任务</h2>
+                <p>整理思维空间，获得丰厚奖励！</p>
+            </div>
+            <div class="daily-reward">
+                <div class="reward-display">
+                    <span class="reward-icon">🗝️</span>
+                    <span class="reward-amount">×5</span>
+                </div>
+                <p class="reward-text">完成任务可获得5把创意钥匙</p>
+            </div>
+            <div class="daily-task-area" id="daily-task-area">
+                <div class="dust-particles" id="dust-particles">
+                    <!-- 灰尘粒子将通过JS生成 -->
+                </div>
+            </div>
+            <div class="daily-progress">
+                <div class="daily-progress-bar">
+                    <div id="daily-progress-fill" class="daily-progress-fill"></div>
+                </div>
+                <span id="daily-progress-text">0/20</span>
+            </div>
+            <button id="skip-daily-btn" class="skip-button">跳过</button>
+        </div>
+    </div>
+
+    <script>
+        // 简化的游戏状态
+        let dailyTaskState = {
+            dustCleaned: 0,
+            totalDust: 15,
+            isCompleted: false
+        };
+        
+        let userState = {
+            lastDailyTask: null,
+            isLoggedIn: true
+        };
+
+        // DOM 元素
+        const elements = {
+            dailyTaskModal: document.getElementById('daily-task-modal'),
+            dailyTaskArea: document.getElementById('daily-task-area'),
+            dustParticles: document.getElementById('dust-particles'),
+            dailyProgressFill: document.getElementById('daily-progress-fill'),
+            dailyProgressText: document.getElementById('daily-progress-text'),
+            skipDailyBtn: document.getElementById('skip-daily-btn')
+        };
+
+        function log(message) {
+            const debugContent = document.getElementById('debug-content');
+            const time = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `<div>[${time}] ${message}</div>`;
+            console.log(message);
+        }
+
+        function testShowModal() {
+            log('开始测试显示每日任务弹窗');
+            
+            // 检查DOM元素
+            if (!elements.dailyTaskModal) {
+                log('错误: 每日任务弹窗元素未找到');
+                return;
+            }
+            log('✓ 每日任务弹窗元素找到');
+            
+            if (!elements.dustParticles) {
+                log('错误: 灰尘粒子容器未找到');
+                return;
+            }
+            log('✓ 灰尘粒子容器找到');
+            
+            // 重置任务状态
+            dailyTaskState.dustCleaned = 0;
+            dailyTaskState.isCompleted = false;
+            log('✓ 任务状态已重置');
+            
+            // 生成灰尘
+            generateDust();
+            log('✓ 灰尘已生成');
+            
+            // 更新进度显示
+            updateDailyProgress();
+            log('✓ 进度已更新');
+            
+            // 显示弹窗
+            elements.dailyTaskModal.classList.remove('hidden');
+            elements.dailyTaskModal.style.display = 'flex';
+            log('✓ 弹窗已显示');
+        }
+
+        function generateDust() {
+            if (!elements.dustParticles) {
+                log('错误: 无法生成灰尘，容器不存在');
+                return;
+            }
+            
+            elements.dustParticles.innerHTML = '';
+            
+            const isMobileDevice = window.innerWidth <= 768;
+            const dustCount = isMobileDevice ? 10 : 15;
+            const baseSize = isMobileDevice ? 20 : 25;
+            
+            log(`生成 ${dustCount} 个灰尘粒子`);
+            
+            for (let i = 0; i < dustCount; i++) {
+                const dust = document.createElement('div');
+                dust.className = 'dust';
+                dust.style.left = `${Math.random() * 80 + 10}%`;
+                dust.style.top = `${Math.random() * 70 + 15}%`;
+                dust.style.animationDelay = `${Math.random() * 2}s`;
+                
+                const size = Math.random() * 15 + baseSize;
+                dust.style.width = `${size}px`;
+                dust.style.height = `${size}px`;
+                
+                dust.style.padding = isMobileDevice ? '15px' : '10px';
+                dust.style.margin = isMobileDevice ? '-15px' : '-10px';
+                
+                dust.addEventListener('click', () => cleanDust(dust));
+                dust.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    cleanDust(dust);
+                });
+                
+                elements.dustParticles.appendChild(dust);
+            }
+            
+            dailyTaskState.totalDust = dustCount;
+        }
+
+        function cleanDust(dustElement) {
+            if (dustElement.classList.contains('cleaned')) return;
+            
+            dustElement.classList.add('cleaned');
+            dailyTaskState.dustCleaned++;
+            
+            log(`清扫了一个灰尘，进度: ${dailyTaskState.dustCleaned}/${dailyTaskState.totalDust}`);
+            
+            updateDailyProgress();
+            
+            if (dailyTaskState.dustCleaned >= dailyTaskState.totalDust) {
+                completeDailyTask();
+            }
+        }
+
+        function updateDailyProgress() {
+            const progress = (dailyTaskState.dustCleaned / dailyTaskState.totalDust) * 100;
+            
+            if (elements.dailyProgressFill) {
+                elements.dailyProgressFill.style.width = `${progress}%`;
+            }
+            
+            if (elements.dailyProgressText) {
+                elements.dailyProgressText.textContent = `${dailyTaskState.dustCleaned}/${dailyTaskState.totalDust}`;
+            }
+        }
+
+        function completeDailyTask() {
+            dailyTaskState.isCompleted = true;
+            log('🎉 每日任务完成！');
+            
+            setTimeout(() => {
+                elements.dailyTaskModal.classList.add('hidden');
+                alert('🎉 每日任务完成！获得5把创意钥匙！');
+            }, 500);
+        }
+
+        // 绑定跳过按钮
+        if (elements.skipDailyBtn) {
+            elements.skipDailyBtn.addEventListener('click', () => {
+                elements.dailyTaskModal.classList.add('hidden');
+                log('用户跳过了每日任务');
+            });
+        }
+
+        // 点击背景关闭弹窗
+        if (elements.dailyTaskModal) {
+            elements.dailyTaskModal.addEventListener('click', (e) => {
+                if (e.target === elements.dailyTaskModal) {
+                    elements.dailyTaskModal.classList.add('hidden');
+                    log('点击背景关闭弹窗');
+                }
+            });
+        }
+
+        log('每日任务测试页面已加载');
+    </script>
+</body>
+</html>

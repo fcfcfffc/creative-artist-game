@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单弹窗测试</title>
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .daily-content {
+            max-width: 500px;
+            width: 90%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .daily-task-area {
+            position: relative;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 20px 0;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .dust-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dust {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(139, 69, 19, 0.8);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .dust:hover {
+            transform: scale(1.2);
+            background: rgba(139, 69, 19, 1);
+        }
+
+        .dust.cleaned {
+            animation: dustClean 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes dustClean {
+            0% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        .daily-progress {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .daily-progress-bar {
+            flex: 1;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .daily-progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .test-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .skip-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>简单弹窗测试</h1>
+        
+        <button class="test-btn" onclick="showModal()">显示每日任务弹窗</button>
+        <button class="test-btn" onclick="showSimpleModal()">显示简单弹窗</button>
+        
+        <div id="status" style="margin: 20px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
+            状态: 等待测试
+        </div>
+    </div>
+
+    <!-- 简单测试弹窗 -->
+    <div id="simple-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>简单测试弹窗</h2>
+            <p>这是一个简单的测试弹窗</p>
+            <button onclick="hideSimpleModal()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 每日任务弹窗 -->
+    <div id="daily-task-modal" class="modal hidden">
+        <div class="modal-content daily-content">
+            <div class="daily-header">
+                <span style="font-size: 48px; display: block; margin-bottom: 15px;">🧹</span>
+                <h2>每日打扫任务</h2>
+                <p>整理思维空间，获得丰厚奖励！</p>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin: 25px 0;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                    <span style="font-size: 32px;">🗝️</span>
+                    <span style="font-size: 32px; font-weight: bold; color: #f1c40f;">×5</span>
+                </div>
+                <p style="font-size: 14px; opacity: 0.9; margin: 0;">完成任务可获得5把创意钥匙</p>
+            </div>
+            
+            <div class="daily-task-area" id="daily-task-area">
+                <div class="dust-particles" id="dust-particles">
+                    <!-- 灰尘粒子将通过JS生成 -->
+                </div>
+            </div>
+            
+            <div class="daily-progress">
+                <div class="daily-progress-bar">
+                    <div id="daily-progress-fill" class="daily-progress-fill"></div>
+                </div>
+                <span id="daily-progress-text" style="font-weight: bold; font-size: 16px; min-width: 50px;">0/5</span>
+            </div>
+            
+            <button class="skip-button" onclick="hideDailyModal()">跳过</button>
+        </div>
+    </div>
+
+    <script>
+        let dustCleaned = 0;
+        let totalDust = 5;
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = '状态: ' + message;
+            console.log(message);
+        }
+
+        function showSimpleModal() {
+            updateStatus('显示简单弹窗');
+            document.getElementById('simple-modal').classList.remove('hidden');
+        }
+
+        function hideSimpleModal() {
+            updateStatus('隐藏简单弹窗');
+            document.getElementById('simple-modal').classList.add('hidden');
+        }
+
+        function showModal() {
+            updateStatus('显示每日任务弹窗');
+            
+            // 重置状态
+            dustCleaned = 0;
+            totalDust = 5;
+            
+            // 生成灰尘
+            generateDust();
+            
+            // 更新进度
+            updateProgress();
+            
+            // 显示弹窗
+            const modal = document.getElementById('daily-task-modal');
+            modal.classList.remove('hidden');
+            
+            updateStatus('每日任务弹窗已显示');
+        }
+
+        function hideDailyModal() {
+            updateStatus('隐藏每日任务弹窗');
+            document.getElementById('daily-task-modal').classList.add('hidden');
+        }
+
+        function generateDust() {
+            const container = document.getElementById('dust-particles');
+            container.innerHTML = '';
+            
+            updateStatus('生成 ' + totalDust + ' 个灰尘粒子');
+            
+            for (let i = 0; i < totalDust; i++) {
+                const dust = document.createElement('div');
+                dust.className = 'dust';
+                dust.style.left = Math.random() * 80 + 10 + '%';
+                dust.style.top = Math.random() * 70 + 15 + '%';
+                
+                dust.addEventListener('click', function() {
+                    cleanDust(this);
+                });
+                
+                container.appendChild(dust);
+            }
+        }
+
+        function cleanDust(dustElement) {
+            if (dustElement.classList.contains('cleaned')) return;
+            
+            dustElement.classList.add('cleaned');
+            dustCleaned++;
+            
+            updateStatus('清扫了灰尘，进度: ' + dustCleaned + '/' + totalDust);
+            updateProgress();
+            
+            if (dustCleaned >= totalDust) {
+                setTimeout(() => {
+                    alert('🎉 任务完成！');
+                    hideDailyModal();
+                }, 500);
+            }
+        }
+
+        function updateProgress() {
+            const progress = (dustCleaned / totalDust) * 100;
+            document.getElementById('daily-progress-fill').style.width = progress + '%';
+            document.getElementById('daily-progress-text').textContent = dustCleaned + '/' + totalDust;
+        }
+
+        // 点击背景关闭弹窗
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.add('hidden');
+                updateStatus('点击背景关闭弹窗');
+            }
+        });
+
+        updateStatus('页面已加载，可以开始测试');
+    </script>
+</body>
+</html>
