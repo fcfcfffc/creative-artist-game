@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备兼容性测试 - 创作中的艺术家</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .device-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎨 创作中的艺术家 - 设备兼容性测试</h1>
+        
+        <div class="device-info">
+            <h3>设备信息</h3>
+            <div id="device-info"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>基础功能测试</h3>
+            <button onclick="testBasicFeatures()">运行基础测试</button>
+            <div id="basic-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>触摸功能测试</h3>
+            <button onclick="testTouchFeatures()">测试触摸功能</button>
+            <div id="touch-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>存储功能测试</h3>
+            <button onclick="testStorageFeatures()">测试本地存储</button>
+            <div id="storage-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>性能测试</h3>
+            <button onclick="testPerformance()">测试性能</button>
+            <div id="performance-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>游戏功能测试</h3>
+            <button onclick="window.open('index.html', '_blank')">打开游戏进行手动测试</button>
+            <div class="test-result info">
+                <strong>手动测试清单：</strong><br>
+                ✓ 用户注册/登录<br>
+                ✓ 画布点击创作<br>
+                ✓ 开箱动画<br>
+                ✓ 思维宫殿展示<br>
+                ✓ AI方案生成<br>
+                ✓ 每日任务<br>
+                ✓ 支付弹窗<br>
+                ✓ 响应式布局
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示设备信息
+        function showDeviceInfo() {
+            const info = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                devicePixelRatio: window.devicePixelRatio || 1,
+                touchSupport: 'ontouchstart' in window,
+                orientation: screen.orientation ? screen.orientation.type : 'unknown'
+            };
+
+            document.getElementById('device-info').innerHTML = Object.entries(info)
+                .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+                .join('<br>');
+        }
+
+        // 基础功能测试
+        function testBasicFeatures() {
+            const results = [];
+            const container = document.getElementById('basic-results');
+
+            // JavaScript支持
+            results.push({
+                test: 'JavaScript ES6支持',
+                pass: typeof Promise !== 'undefined' && typeof Map !== 'undefined',
+                message: 'ES6 Promise和Map支持'
+            });
+
+            // CSS支持
+            results.push({
+                test: 'CSS Grid支持',
+                pass: CSS.supports('display', 'grid'),
+                message: 'CSS Grid布局支持'
+            });
+
+            results.push({
+                test: 'CSS Flexbox支持',
+                pass: CSS.supports('display', 'flex'),
+                message: 'CSS Flexbox布局支持'
+            });
+
+            // Canvas支持
+            const canvas = document.createElement('canvas');
+            results.push({
+                test: 'Canvas支持',
+                pass: !!(canvas.getContext && canvas.getContext('2d')),
+                message: 'HTML5 Canvas支持'
+            });
+
+            // 动画支持
+            results.push({
+                test: 'CSS动画支持',
+                pass: CSS.supports('animation-name', 'test'),
+                message: 'CSS动画和过渡支持'
+            });
+
+            displayResults(container, results);
+        }
+
+        // 触摸功能测试
+        function testTouchFeatures() {
+            const results = [];
+            const container = document.getElementById('touch-results');
+
+            results.push({
+                test: '触摸事件支持',
+                pass: 'ontouchstart' in window,
+                message: '触摸事件API支持'
+            });
+
+            results.push({
+                test: '指针事件支持',
+                pass: 'onpointerdown' in window,
+                message: '指针事件API支持'
+            });
+
+            results.push({
+                test: '触摸点数量',
+                pass: navigator.maxTouchPoints > 0,
+                message: `最大触摸点数: ${navigator.maxTouchPoints || 0}`
+            });
+
+            results.push({
+                test: '设备方向支持',
+                pass: 'orientation' in window || 'onorientationchange' in window,
+                message: '设备方向变化检测'
+            });
+
+            displayResults(container, results);
+        }
+
+        // 存储功能测试
+        function testStorageFeatures() {
+            const results = [];
+            const container = document.getElementById('storage-results');
+
+            // localStorage测试
+            try {
+                localStorage.setItem('test', 'value');
+                const value = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                results.push({
+                    test: 'localStorage支持',
+                    pass: value === 'value',
+                    message: '本地存储读写正常'
+                });
+            } catch (e) {
+                results.push({
+                    test: 'localStorage支持',
+                    pass: false,
+                    message: '本地存储不可用: ' + e.message
+                });
+            }
+
+            // sessionStorage测试
+            try {
+                sessionStorage.setItem('test', 'value');
+                const value = sessionStorage.getItem('test');
+                sessionStorage.removeItem('test');
+                results.push({
+                    test: 'sessionStorage支持',
+                    pass: value === 'value',
+                    message: '会话存储读写正常'
+                });
+            } catch (e) {
+                results.push({
+                    test: 'sessionStorage支持',
+                    pass: false,
+                    message: '会话存储不可用: ' + e.message
+                });
+            }
+
+            displayResults(container, results);
+        }
+
+        // 性能测试
+        function testPerformance() {
+            const results = [];
+            const container = document.getElementById('performance-results');
+
+            // Performance API
+            results.push({
+                test: 'Performance API支持',
+                pass: 'performance' in window && 'now' in performance,
+                message: '性能监控API支持'
+            });
+
+            // RequestAnimationFrame
+            results.push({
+                test: 'RequestAnimationFrame支持',
+                pass: 'requestAnimationFrame' in window,
+                message: '动画帧API支持'
+            });
+
+            // 内存信息（如果可用）
+            if ('memory' in performance) {
+                const memory = performance.memory;
+                results.push({
+                    test: '内存信息',
+                    pass: true,
+                    message: `已用: ${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB, 总计: ${Math.round(memory.totalJSHeapSize / 1024 / 1024)}MB`
+                });
+            }
+
+            // 简单性能测试
+            const start = performance.now();
+            for (let i = 0; i < 100000; i++) {
+                Math.random();
+            }
+            const end = performance.now();
+            const duration = end - start;
+
+            results.push({
+                test: 'JavaScript执行性能',
+                pass: duration < 100,
+                message: `10万次随机数生成耗时: ${duration.toFixed(2)}ms`
+            });
+
+            displayResults(container, results);
+        }
+
+        // 显示测试结果
+        function displayResults(container, results) {
+            container.innerHTML = results.map(result => 
+                `<div class="test-result ${result.pass ? 'pass' : 'fail'}">
+                    <strong>${result.test}:</strong> ${result.pass ? '✓ 通过' : '✗ 失败'} - ${result.message}
+                </div>`
+            ).join('');
+        }
+
+        // 页面加载时显示设备信息
+        window.addEventListener('load', showDeviceInfo);
+    </script>
+</body>
+</html>

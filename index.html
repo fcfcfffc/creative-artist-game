@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="description" content="创作中的艺术家 - 一个有趣的思维创意收集游戏，通过创作获得钥匙，开启宝箱收集创意作品">
+    <meta name="keywords" content="创意游戏,艺术收集,思维训练,创作灵感,AI创作方案">
+    <meta name="author" content="Creative Artist Game">
+    <meta name="theme-color" content="#667eea">
+    <title>创作中的艺术家 - 思维创意收集游戏</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+</head>
+<body>
+    <!-- 顶部状态栏 -->
+    <div class="status-bar">
+        <div class="status-content">
+            <div class="currency-display">
+                <div class="currency-item">
+                    <span class="currency-icon">🗝️</span>
+                    <span class="currency-value" id="tickets">3</span>
+                </div>
+            </div>
+            
+            <div class="nav-buttons"></div>
+            <button id="work-btn" class="nav-btn active" title="创意工坊">
+                <span class="nav-icon">💡</span>
+            </button>
+            <button id="gacha-nav-btn" class="nav-btn" title="创意宝箱">
+                <span class="nav-icon">📦</span>
+            </button>
+            <button id="gallery-btn" class="nav-btn" title="思维宫殿">
+                <span class="nav-icon">🧠</span>
+            </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 工作界面 - 全屏画布 -->
+    <div id="work-screen" class="screen active">
+        <div class="canvas-workspace" id="canvas-workspace">
+            <!-- 画布背景 -->
+            <div class="canvas-background">
+                <div class="canvas-grid"></div>
+            </div>
+            
+            <!-- 画布内容 - 笔触显示区域 -->
+            <div class="canvas-content" id="canvas-content">
+                <!-- 笔触将动态添加到这里 -->
+            </div>
+        </div>
+        
+        <!-- 画布信息面板 - 移到画布外面 -->
+        <div class="canvas-info-panel">
+            <div class="info-item">
+                <span class="info-icon">💡</span>
+                <span class="info-text"><span id="click-count">0</span>/100 个创意</span>
+            </div>
+            <div class="progress-mini">
+                <div id="progress-fill" class="progress-fill-mini"></div>
+            </div>
+
+            <button id="buy-keys-premium-btn" class="buy-premium-btn">
+                <span class="btn-icon">🗝️</span>
+                <span class="btn-text">充值创意钥匙</span>
+                <span class="btn-desc">¥100 = 20把创意钥匙</span>
+            </button>
+        </div>
+        
+        <!-- 画布提示 -->
+        <div class="canvas-hint">
+            <span class="hint-icon">👆</span>
+            <span class="hint-text">点击画布激发创意</span>
+        </div>
+    </div>
+
+    <!-- 展厅界面 -->
+    <div id="gallery-screen" class="screen">
+        <div class="gallery-container">
+            <div class="gallery-header">
+                <div class="gallery-title">
+                    <span class="gallery-icon">🧠</span>
+                    <h1>思维宫殿</h1>
+                </div>
+                
+                <div class="collection-stats">
+                    <div class="stat-card">
+                        <span class="stat-icon">🖼️</span>
+                        <span class="stat-number" id="total-artworks">0</span>
+                        <span class="stat-label">创意作品</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">⭐</span>
+                        <span class="stat-number" id="rare-artworks">0</span>
+                        <span class="stat-label">珍贵创意</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gallery-main">
+                <div class="collection-filter">
+                    <button class="filter-btn active" data-filter="all">
+                        <span class="filter-icon">🎨</span>
+                        <span>全部</span>
+                    </button>
+                    <button class="filter-btn" data-filter="mythic">
+                        <span class="filter-icon">💎</span>
+                        <span>神话</span>
+                    </button>
+                    <button class="filter-btn" data-filter="legendary">
+                        <span class="filter-icon">🌟</span>
+                        <span>传说</span>
+                    </button>
+                    <button class="filter-btn" data-filter="epic">
+                        <span class="filter-icon">💜</span>
+                        <span>史诗</span>
+                    </button>
+                    <button class="filter-btn" data-filter="rare">
+                        <span class="filter-icon">💙</span>
+                        <span>稀有</span>
+                    </button>
+                    <button class="filter-btn" data-filter="common">
+                        <span class="filter-icon">⚪</span>
+                        <span>普通</span>
+                    </button>
+                </div>
+                
+                <div id="collection" class="gallery-grid">
+                    <!-- 收藏的艺术品将显示在这里 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 开箱界面 - 全屏木箱 -->
+    <div id="gacha-screen" class="screen">
+        <div class="fullscreen-crate">
+            <!-- 木箱展示区域 -->
+            <div id="treasure-chest-area" class="treasure-chest-fullscreen">
+                <div class="crate-center">
+                    <div id="treasure-chest" class="icon-crate">
+                        <div class="crate-icon" id="crate-icon">📦</div>
+                        <!-- 封条 - 移除 -->
+                        <!-- 钥匙动画 -->
+                        <div class="key-animation" id="key-animation">🗝️</div>
+                    </div>
+                </div>
+                
+                <!-- 钥匙信息 - 隐藏 -->
+                <div class="keys-info" style="display: none;">
+                    <div class="keys-available">
+                        <span class="keys-icon">🗝️</span>
+                        <span class="keys-count" id="keys-count">3</span>
+                        <span class="keys-text">把钥匙</span>
+                    </div>
+                </div>
+                
+                <!-- 开箱按钮 -->
+                <button id="gacha-btn" class="mega-open-btn">
+                    <span class="btn-icon">🔓</span>
+                    <span class="btn-text">开启创意宝箱</span>
+                </button>
+            </div>
+
+            <!-- CS风格滚动区域 -->
+            <div id="case-opening-area" class="case-opening-fullscreen hidden">
+                <div class="opening-title">
+                    <h2>🎰 正在开启创意宝箱...</h2>
+                </div>
+                
+                <div class="case-roll-container">
+                    <div id="case-items" class="case-items">
+                        <!-- 物品将通过JS生成 -->
+                    </div>
+                    <div class="case-pointer">
+                        <div class="pointer-line"></div>
+                        <div class="pointer-arrow"></div>
+                    </div>
+                </div>
+                
+                <div class="opening-progress">
+                    <div class="progress-text">
+                        <span class="progress-icon">⏳</span>
+                        <span>正在滚动中...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果弹窗 -->
+    <div id="result-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="result-header">
+                <h3 id="result-title">🎉 恭喜获得创意！</div>h3>
+            </div>
+            <div id="result-artwork" class="result-artwork"></div>
+            <button id="close-modal" class="close-button">确定</button>
+        </div>
+    </div>
+
+    <!-- 用户登录/注册弹窗 -->
+    <div id="login-modal" class="modal hidden">
+        <div class="modal-content login-content">
+            <div class="login-header">
+                <span class="login-icon">🎨</span>
+                <h2>欢迎来到创作中的艺术家</h2>
+                <p>请输入您的昵称开始游戏</p>
+            </div>
+            <div class="login-form">
+                <div class="input-group">
+                    <span class="input-icon">👤</span>
+                    <input type="text" id="username-input" placeholder="输入昵称（2-10个字符）" maxlength="10">
+                </div>
+                <button id="login-btn" class="login-button">
+                    <span>开始游戏</span>
+                    <span class="btn-arrow">→</span>
+                </button>
+                <div class="login-tip">
+                    <span>💡</span>
+                    <span>数据将保存在本地浏览器中</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 每日任务弹窗 -->
+    <div id="daily-task-modal" class="modal hidden">
+        <div class="modal-content daily-content">
+            <div class="daily-header">
+                <span class="daily-icon">🧹</span>
+                <h2>每日打扫任务</h2>
+                <p>整理思维空间，获得丰厚奖励！</div>p>
+            </div>
+            <div class="daily-reward">
+                <div class="reward-display">
+                    <span class="reward-icon">🗝️</span>
+                    <span class="reward-amount">×5</span>
+                </div>
+                <p class="reward-text">完成任务可获得5把创意钥匙</p>
+            </div>
+            <div class="daily-task-area" id="daily-task-area">
+                <div class="dust-particles" id="dust-particles">
+                    <!-- 灰尘粒子将通过JS生成 -->
+                </div>
+            </div>
+            <div class="daily-progress">
+                <div class="daily-progress-bar">
+                    <div id="daily-progress-fill" class="daily-progress-fill"></div>
+                </div>
+                <span id="daily-progress-text">0/20</span>
+            </div>
+            <button id="skip-daily-btn" class="skip-button">跳过</button>
+        </div>
+    </div>
+
+    <!-- 购买钥匙弹窗 -->
+    <div id="key-purchase-modal" class="modal hidden">
+        <div class="modal-content key-purchase-content">
+            <div class="purchase-header">
+                <span class="purchase-icon">🗝️</span>
+                <h2>充值创意钥匙</h2>
+                <p>选择支付方式，快速获得创意钥匙</p>
+            </div>
+            
+            <div class="key-package">
+                <div class="package-showcase">
+                    <div class="package-icon">🗝️</div>
+                    <div class="package-title">创意钥匙礼包</div>
+                    <div class="package-amount">20 把创意钥匙</div>
+                    <div class="package-price">¥100</div>
+                    <div class="package-value">超值优惠！</div>
+                </div>
+            </div>
+            
+            <div class="payment-methods">
+                <h3>选择支付方式</h3>
+                <div class="payment-options">
+                    <button class="payment-btn active" data-method="alipay">
+                        <span class="payment-icon">💙</span>
+                        <span>支付宝</span>
+                    </button>
+                    <button class="payment-btn" data-method="wechat">
+                        <span class="payment-icon">💚</span>
+                        <span>微信支付</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="purchase-actions">
+                <button id="confirm-key-purchase-btn" class="confirm-purchase-btn">
+                    <span class="btn-icon">🔒</span>
+                    <span class="btn-text">立即支付 ¥100</span>
+                </button>
+                <button id="cancel-key-purchase-btn" class="cancel-purchase-btn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二维码支付弹窗 -->
+    <div id="qr-payment-modal" class="modal hidden">
+        <div class="modal-content qr-payment-content">
+            <div class="qr-header">
+                <span class="qr-icon" id="qr-payment-icon">💙</span>
+                <h2 id="qr-payment-title">支付宝支付</h2>
+                <p>请使用手机扫描二维码完成支付</p>
+            </div>
+            
+            <div class="qr-code-container">
+                <div class="qr-code" id="qr-code">
+                    <!-- 二维码将在这里生成 -->
+                    <div class="qr-placeholder">
+                        <div class="qr-squares">
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                            <div class="qr-square"></div>
+                        </div>
+                        <div class="qr-center-logo" id="qr-center-logo">💙</div>
+                    </div>
+                </div>
+                <div class="qr-amount">¥100.00</div>
+            </div>
+            
+            <div class="qr-instructions">
+                <div class="instruction-item">
+                    <span class="instruction-icon">📱</span>
+                    <span>打开<span id="payment-app-name">支付宝</span>APP</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">📷</span>
+                    <span>扫描上方二维码</span>
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">💰</span>
+                    <span>确认支付¥100</span>
+                </div>
+            </div>
+            
+            <div class="qr-status">
+                <div class="status-text">等待支付中...</div>
+                <div class="status-timer">剩余时间：<span id="payment-timer">05:00</span></div>
+            </div>
+            
+            <div class="qr-actions">
+                <button id="refresh-qr-btn" class="refresh-btn">
+                    <span>🔄</span>
+                    <span>刷新二维码</span>
+                </button>
+                <button id="cancel-qr-payment-btn" class="cancel-btn">取消支付</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- 用户信息显示 -->
+    <div class="user-info" id="user-info">
+        <span class="user-avatar">👤</span>
+        <span class="user-name" id="user-name">访客</span>
+        <button class="daily-task-btn" id="daily-task-btn" title="每日任务">
+            <span>🧹</span>
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
