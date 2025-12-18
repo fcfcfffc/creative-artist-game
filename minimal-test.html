@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最小化测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        .loading {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 最小化游戏测试</h1>
+    <div id="test-results">
+        <div class="test-result loading">⏳ 正在加载script.js...</div>
+    </div>
+
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function addResult(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        // 测试script.js加载前的状态
+        addResult('✅ HTML页面加载完成', 'success');
+        addResult('✅ 基础JavaScript运行正常', 'success');
+        
+        // 记录加载前的时间
+        const loadStartTime = Date.now();
+        
+        // 监听script.js加载错误
+        window.addEventListener('error', function(event) {
+            if (event.filename && event.filename.includes('script.js')) {
+                addResult(`❌ script.js加载错误: ${event.message} (行 ${event.lineno})`, 'error');
+            } else {
+                addResult(`❌ 其他错误: ${event.message}`, 'error');
+            }
+        });
+        
+        // 检查script.js是否成功加载
+        setTimeout(() => {
+            const loadTime = Date.now() - loadStartTime;
+            
+            // 检查全局变量是否存在
+            if (typeof userState !== 'undefined') {
+                addResult('✅ userState 变量已定义', 'success');
+            } else {
+                addResult('❌ userState 变量未定义', 'error');
+            }
+            
+            if (typeof gameState !== 'undefined') {
+                addResult('✅ gameState 变量已定义', 'success');
+            } else {
+                addResult('❌ gameState 变量未定义', 'error');
+            }
+            
+            if (typeof artworks !== 'undefined') {
+                addResult('✅ artworks 数据已定义', 'success');
+            } else {
+                addResult('❌ artworks 数据未定义', 'error');
+            }
+            
+            // 检查函数是否存在
+            if (typeof initGame === 'function') {
+                addResult('✅ initGame 函数已定义', 'success');
+            } else {
+                addResult('❌ initGame 函数未定义', 'error');
+            }
+            
+            if (typeof performGacha === 'function') {
+                addResult('✅ performGacha 函数已定义', 'success');
+            } else {
+                addResult('❌ performGacha 函数未定义', 'error');
+            }
+            
+            addResult(`⏱️ 检查完成，耗时: ${loadTime}ms`, 'success');
+            
+            // 尝试调用initGame
+            try {
+                if (typeof initGame === 'function') {
+                    addResult('🚀 尝试调用 initGame()...', 'loading');
+                    initGame();
+                    addResult('✅ initGame() 调用成功', 'success');
+                } else {
+                    addResult('⚠️ 无法调用 initGame，函数不存在', 'error');
+                }
+            } catch (error) {
+                addResult(`❌ initGame() 调用失败: ${error.message}`, 'error');
+            }
+            
+        }, 1000);
+    </script>
+    
+    <!-- 加载主要的script.js文件 -->
+    <script src="script.js"></script>
+    
+    <script>
+        // script.js加载后的检查
+        setTimeout(() => {
+            addResult('📋 script.js 文件加载完成', 'success');
+        }, 100);
+    </script>
+</body>
+</html>

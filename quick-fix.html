@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏快速修复工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .fix-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .error-item {
+            border-left-color: #f44336;
+        }
+        .warning-item {
+            border-left-color: #ff9800;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: rgba(76, 175, 80, 0.3); }
+        .error { background: rgba(244, 67, 54, 0.3); }
+        .warning { background: rgba(255, 152, 0, 0.3); }
+        .info { background: rgba(33, 150, 243, 0.3); }
+        #log {
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 游戏快速修复工具</h1>
+        <p>这个工具可以帮助诊断和修复游戏加载问题</p>
+        
+        <div class="fix-item">
+            <h3>🔍 系统检查</h3>
+            <button onclick="checkProtocol()">检查访问协议</button>
+            <button onclick="checkSystem()">检查浏览器兼容性</button>
+            <button onclick="checkFiles()">检查文件完整性</button>
+            <button onclick="checkLocalStorage()">检查本地存储</button>
+        </div>
+        
+        <div class="fix-item">
+            <h3>🧹 清理操作</h3>
+            <button onclick="clearCache()">清除游戏缓存</button>
+            <button onclick="clearLocalStorage()" class="danger">清除本地存储</button>
+            <button onclick="resetGameData()" class="danger">重置游戏数据</button>
+        </div>
+        
+        <div class="fix-item">
+            <h3>🧪 测试功能</h3>
+            <button onclick="testBasicJS()">测试JavaScript</button>
+            <button onclick="testGameFunctions()">测试游戏函数</button>
+            <button onclick="testEventListeners()">测试事件监听</button>
+        </div>
+        
+        <div class="fix-item">
+            <h3>🚀 启动游戏</h3>
+            <button onclick="tryStartGame()">尝试启动游戏</button>
+            <button onclick="openMainGame()">打开主游戏</button>
+            <button onclick="openDebugMode()">调试模式</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        const log = document.getElementById('log');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `[${timestamp}] ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // 系统检查
+        function checkSystem() {
+            addLog('开始系统检查...');
+            
+            const checks = {
+                'ES6支持': () => {
+                    try {
+                        eval('const x = () => true; let y = `template`; return x() && y === "template"');
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                },
+                'localStorage': () => typeof Storage !== 'undefined',
+                'JSON支持': () => typeof JSON !== 'undefined',
+                'DOM API': () => typeof document.querySelector === 'function',
+                '事件监听': () => typeof document.addEventListener === 'function',
+                'Promise支持': () => typeof Promise !== 'undefined',
+                'Fetch API': () => typeof fetch !== 'undefined'
+            };
+            
+            let allPassed = true;
+            for (const [name, test] of Object.entries(checks)) {
+                try {
+                    const result = test();
+                    addLog(`${name}: ${result ? '✅ 通过' : '❌ 失败'}`);
+                    if (!result) allPassed = false;
+                } catch (error) {
+                    addLog(`${name}: ❌ 错误 - ${error.message}`);
+                    allPassed = false;
+                }
+            }
+            
+            if (allPassed) {
+                addResult('✅ 浏览器兼容性检查通过', 'success');
+            } else {
+                addResult('❌ 浏览器兼容性检查失败，请更新浏览器', 'error');
+            }
+        }
+        
+        // 检查文件
+        function checkFiles() {
+            addLog('检查文件完整性...');
+            
+            // 首先检查是否在使用file协议
+            if (window.location.protocol === 'file:') {
+                addLog('⚠️ 检测到使用 file:// 协议');
+                addLog('这会导致文件访问被浏览器安全策略阻止');
+                addResult('❌ 使用了file://协议，建议使用兼容版本或本地服务器', 'error');
+                
+                // 提供解决方案
+                setTimeout(() => {
+                    if (confirm('检测到您在使用file://协议打开文件。\n\n推荐解决方案：\n1. 使用兼容版本游戏 (legacy-compatible.html)\n2. 使用本地服务器运行完整版\n\n是否打开兼容版本？')) {
+                        window.open('legacy-compatible.html', '_blank');
+                    }
+                }, 1000);
+                return;
+            }
+            
+            const files = ['index.html', 'script.js', 'style.css'];
+            let checkedFiles = 0;
+            
+            files.forEach(file => {
+                fetch(file, { method: 'HEAD' })
+                    .then(response => {
+                        checkedFiles++;
+                        if (response.ok) {
+                            addLog(`${file}: ✅ 存在`);
+                        } else {
+                            addLog(`${file}: ❌ 不存在或无法访问`);
+                        }
+                        
+                        if (checkedFiles === files.length) {
+                            addResult('文件检查完成', 'info');
+                        }
+                    })
+                    .catch(error => {
+                        checkedFiles++;
+                        addLog(`${file}: ❌ 检查失败 - ${error.message}`);
+                        
+                        if (checkedFiles === files.length) {
+                            addResult('文件检查完成（部分失败）', 'warning');
+                        }
+                    });
+            });
+        }
+        
+        // 检查本地存储
+        function checkLocalStorage() {
+            addLog('检查本地存储...');
+            
+            try {
+                const testKey = 'test_' + Date.now();
+                localStorage.setItem(testKey, 'test');
+                const value = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                if (value === 'test') {
+                    addLog('localStorage: ✅ 正常工作');
+                    
+                    // 检查游戏数据
+                    const gameData = localStorage.getItem('gameState');
+                    const collectionData = localStorage.getItem('artworkCollection');
+                    
+                    addLog(`游戏状态数据: ${gameData ? '存在' : '不存在'}`);
+                    addLog(`收藏数据: ${collectionData ? '存在' : '不存在'}`);
+                    
+                    if (gameData || collectionData) {
+                        addResult('发现游戏存档数据', 'info');
+                    }
+                } else {
+                    addLog('localStorage: ❌ 工作异常');
+                    addResult('本地存储功能异常', 'error');
+                }
+            } catch (error) {
+                addLog(`localStorage错误: ${error.message}`);
+                addResult('本地存储不可用', 'error');
+            }
+        }
+        
+        // 清除缓存
+        function clearCache() {
+            addLog('尝试清除缓存...');
+            
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                    addLog('Service Worker缓存已清除');
+                });
+            }
+            
+            // 清除会话存储
+            if (typeof sessionStorage !== 'undefined') {
+                sessionStorage.clear();
+                addLog('会话存储已清除');
+            }
+            
+            addResult('缓存清除完成，建议刷新页面', 'success');
+        }
+        
+        // 清除本地存储
+        function clearLocalStorage() {
+            if (confirm('确定要清除所有本地存储数据吗？这将删除游戏存档！')) {
+                try {
+                    localStorage.clear();
+                    addLog('本地存储已清除');
+                    addResult('本地存储已清除，游戏数据已重置', 'success');
+                } catch (error) {
+                    addLog(`清除失败: ${error.message}`);
+                    addResult('清除本地存储失败', 'error');
+                }
+            }
+        }
+        
+        // 重置游戏数据
+        function resetGameData() {
+            if (confirm('确定要重置游戏数据吗？这将删除所有进度！')) {
+                try {
+                    localStorage.removeItem('gameState');
+                    localStorage.removeItem('artworkCollection');
+                    localStorage.removeItem('userState');
+                    localStorage.removeItem('dailyTaskState');
+                    addLog('游戏数据已重置');
+                    addResult('游戏数据已重置', 'success');
+                } catch (error) {
+                    addLog(`重置失败: ${error.message}`);
+                    addResult('重置游戏数据失败', 'error');
+                }
+            }
+        }
+        
+        // 测试JavaScript
+        function testBasicJS() {
+            addLog('测试基础JavaScript功能...');
+            
+            try {
+                // 测试ES6功能
+                const arrow = () => 'test';
+                const template = `Hello ${'World'}`;
+                const [a, b] = [1, 2];
+                const {x, y} = {x: 1, y: 2};
+                
+                addLog('箭头函数: ✅');
+                addLog('模板字符串: ✅');
+                addLog('解构赋值: ✅');
+                
+                // 测试异步功能
+                Promise.resolve('test').then(result => {
+                    addLog('Promise: ✅');
+                });
+                
+                addResult('JavaScript功能测试通过', 'success');
+            } catch (error) {
+                addLog(`JavaScript测试失败: ${error.message}`);
+                addResult('JavaScript功能测试失败', 'error');
+            }
+        }
+        
+        // 测试游戏函数
+        function testGameFunctions() {
+            addLog('测试游戏函数...');
+            
+            // 尝试加载script.js并测试函数
+            const script = document.createElement('script');
+            script.src = 'script.js';
+            script.onload = () => {
+                addLog('script.js加载成功');
+                
+                // 测试全局变量
+                const globals = ['userState', 'gameState', 'artworks', 'elements'];
+                globals.forEach(name => {
+                    if (typeof window[name] !== 'undefined') {
+                        addLog(`${name}: ✅ 已定义`);
+                    } else {
+                        addLog(`${name}: ❌ 未定义`);
+                    }
+                });
+                
+                // 测试函数
+                const functions = ['initGame', 'performGacha', 'switchScreen', 'updateUI'];
+                functions.forEach(name => {
+                    if (typeof window[name] === 'function') {
+                        addLog(`${name}(): ✅ 已定义`);
+                    } else {
+                        addLog(`${name}(): ❌ 未定义`);
+                    }
+                });
+                
+                addResult('游戏函数检查完成', 'info');
+            };
+            script.onerror = () => {
+                addLog('script.js加载失败');
+                addResult('无法加载游戏脚本', 'error');
+            };
+            document.head.appendChild(script);
+        }
+        
+        // 测试事件监听
+        function testEventListeners() {
+            addLog('测试事件监听功能...');
+            
+            try {
+                let eventFired = false;
+                const testBtn = document.createElement('button');
+                testBtn.style.display = 'none';
+                
+                const handler = () => {
+                    eventFired = true;
+                    addLog('事件监听: ✅ 正常工作');
+                };
+                
+                testBtn.addEventListener('click', handler);
+                document.body.appendChild(testBtn);
+                testBtn.click();
+                
+                setTimeout(() => {
+                    testBtn.removeEventListener('click', handler);
+                    document.body.removeChild(testBtn);
+                    
+                    if (eventFired) {
+                        addResult('事件监听测试通过', 'success');
+                    } else {
+                        addResult('事件监听测试失败', 'error');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                addLog(`事件监听测试失败: ${error.message}`);
+                addResult('事件监听测试失败', 'error');
+            }
+        }
+        
+        // 尝试启动游戏
+        function tryStartGame() {
+            addLog('尝试启动游戏...');
+            
+            try {
+                if (typeof initGame === 'function') {
+                    initGame();
+                    addLog('游戏初始化成功');
+                    addResult('游戏启动成功！', 'success');
+                } else {
+                    addLog('initGame函数未找到');
+                    addResult('无法启动游戏，函数未定义', 'error');
+                }
+            } catch (error) {
+                addLog(`游戏启动失败: ${error.message}`);
+                addResult('游戏启动失败', 'error');
+            }
+        }
+        
+        // 打开主游戏
+        function openMainGame() {
+            window.open('index.html', '_blank');
+        }
+        
+        // 调试模式
+        function openDebugMode() {
+            window.open('debug-test.html', '_blank');
+        }
+        
+        // 页面加载时自动运行基础检查
+        window.addEventListener('load', () => {
+            addLog('快速修复工具已加载');
+            addResult('工具已准备就绪，点击按钮开始诊断', 'info');
+        });
+        
+        // 错误捕获
+        window.addEventListener('error', (e) => {
+            addLog(`捕获到错误: ${e.message}`);
+        });
+    </script>
+</body>
+</html>

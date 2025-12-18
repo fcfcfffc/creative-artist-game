@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创作中的艺术家 - 兼容版本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-area {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .currency {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .canvas-area {
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .canvas-area:hover {
+            background: #e8e8e8;
+            border-color: #999;
+        }
+        
+        .canvas-area.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .chest-area {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .chest {
+            font-size: 100px;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .chest:hover {
+            transform: scale(1.1);
+        }
+        
+        .chest.bounce {
+            animation: bounce 0.6s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0) scale(1); }
+            40% { transform: translateY(-20px) scale(1.1); }
+            80% { transform: translateY(-10px) scale(1.05); }
+        }
+        
+        .collection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .artwork-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .artwork-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .artwork-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        
+        .artwork-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .rarity {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .rarity-common { background: #95a5a6; }
+        .rarity-rare { background: #3498db; }
+        .rarity-epic { background: #9b59b6; }
+        .rarity-legendary { background: #f39c12; }
+        .rarity-mythic { background: #e74c3c; }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 创作中的艺术家</h1>
+            <p>兼容版本 - 支持旧版浏览器</p>
+        </div>
+        
+        <div class="status-bar">
+            <div class="currency">
+                <span>🗝️</span>
+                <span id="tickets">3</span>
+                <span>把钥匙</span>
+            </div>
+            <div class="currency">
+                <span>🎨</span>
+                <span id="click-count">0</span>
+                <span>个创意</span>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('work')">💡 创作</button>
+            <button class="tab" onclick="switchTab('gacha')">📦 开箱</button>
+            <button class="tab" onclick="switchTab('gallery')">🖼️ 展厅</button>
+        </div>
+        
+        <!-- 创作界面 -->
+        <div id="work-content" class="tab-content active">
+            <div class="game-area">
+                <h3>创意工坊</h3>
+                <div class="canvas-area" id="canvas" onclick="handleCanvasClick()">
+                    <div style="font-size: 60px; margin-bottom: 20px;">🎨</div>
+                    <h3>点击这里激发创意</h3>
+                    <p>每100次点击获得1把创意钥匙</p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
+                <p>进度: <span id="progress-text">0/100</span></p>
+            </div>
+        </div>
+        
+        <!-- 开箱界面 -->
+        <div id="gacha-content" class="tab-content">
+            <div class="game-area">
+                <div class="chest-area">
+                    <h3>创意宝箱</h3>
+                    <div class="chest" id="chest" onclick="openChest()">📦</div>
+                    <p>点击宝箱开启创意之旅</p>
+                    <button class="button" id="open-btn" onclick="openChest()">
+                        🔓 开启宝箱 (消耗1把钥匙)
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 展厅界面 -->
+        <div id="gallery-content" class="tab-content">
+            <div class="game-area">
+                <h3>🖼️ 创意展厅</h3>
+                <p>收藏: <span id="collection-count">0</span> 件作品</p>
+                <div class="collection" id="collection">
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 60px; margin-bottom: 20px;">🖼️</div>
+                        <h3>暂无收藏</h3>
+                        <p>去开箱获得您的第一个创意作品吧！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果弹窗 -->
+    <div id="result-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="result-title">🎉 恭喜获得创意！</h3>
+            <div id="result-content" style="margin: 20px 0;"></div>
+            <button class="button" onclick="closeModal()">确定</button>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // 使用ES5语法，兼容旧浏览器
+        
+        // 游戏状态 - 使用var而不是let/const
+        var gameState = {
+            tickets: 3,
+            clickCount: 0,
+            clickProgress: 0,
+            collection: []
+        };
+        
+        // 创意作品数据
+        var artworks = [
+            { id: 1, name: "蒙娜丽莎", rarity: "mythic", icon: "👸", probability: 1 },
+            { id: 2, name: "星夜", rarity: "mythic", icon: "🌌", probability: 1 },
+            { id: 3, name: "向日葵", rarity: "legendary", icon: "🌻", probability: 4 },
+            { id: 4, name: "呐喊", rarity: "legendary", icon: "😱", probability: 4 },
+            { id: 5, name: "大卫像", rarity: "epic", icon: "🗿", probability: 7 },
+            { id: 6, name: "思想者", rarity: "epic", icon: "🤔", probability: 7 },
+            { id: 7, name: "维纳斯", rarity: "epic", icon: "💃", probability: 6 },
+            { id: 8, name: "自由女神", rarity: "rare", icon: "🗽", probability: 10 },
+            { id: 9, name: "断臂维纳斯", rarity: "rare", icon: "🏛️", probability: 10 },
+            { id: 10, name: "胜利女神", rarity: "rare", icon: "👼", probability: 10 },
+            { id: 11, name: "抽象画A", rarity: "common", icon: "🎨", probability: 10 },
+            { id: 12, name: "抽象画B", rarity: "common", icon: "🖼️", probability: 10 },
+            { id: 13, name: "抽象画C", rarity: "common", icon: "🖌️", probability: 10 },
+            { id: 14, name: "抽象画D", rarity: "common", icon: "🎭", probability: 10 }
+        ];
+        
+        // 稀有度文本映射
+        var rarityText = {
+            common: '普通',
+            rare: '稀有',
+            epic: '史诗',
+            legendary: '传说',
+            mythic: '神话'
+        };
+        
+        // 切换标签页
+        function switchTab(tabName) {
+            // 隐藏所有标签内容
+            var contents = document.querySelectorAll('.tab-content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+            
+            // 移除所有标签的active类
+            var tabs = document.querySelectorAll('.tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            // 显示选中的标签内容
+            document.getElementById(tabName + '-content').classList.add('active');
+            
+            // 激活对应的标签按钮
+            event.target.classList.add('active');
+            
+            // 如果切换到展厅，更新收藏显示
+            if (tabName === 'gallery') {
+                displayCollection();
+            }
+        }
+        
+        // 画布点击处理
+        function handleCanvasClick() {
+            gameState.clickCount++;
+            gameState.clickProgress++;
+            
+            // 添加点击效果
+            var canvas = document.getElementById('canvas');
+            canvas.classList.add('active');
+            setTimeout(function() {
+                canvas.classList.remove('active');
+            }, 200);
+            
+            // 检查是否完成创意
+            if (gameState.clickProgress >= 100) {
+                gameState.clickProgress = 0;
+                gameState.tickets++;
+                showNotification('🗝️ 完成了一个创意！获得1把创意钥匙！');
+            }
+            
+            updateUI();
+            saveGameState();
+        }
+        
+        // 开箱处理
+        function openChest() {
+            if (gameState.tickets <= 0) {
+                showNotification('❌ 没有钥匙了！去创作获得更多钥匙吧！');
+                return;
+            }
+            
+            gameState.tickets--;
+            
+            // 添加动画效果
+            var chest = document.getElementById('chest');
+            chest.classList.add('bounce');
+            setTimeout(function() {
+                chest.classList.remove('bounce');
+            }, 600);
+            
+            // 获取随机作品
+            var artwork = getRandomArtwork();
+            gameState.collection.push(artwork);
+            
+            // 显示结果
+            showResult(artwork);
+            
+            updateUI();
+            saveGameState();
+        }
+        
+        // 获取随机作品
+        function getRandomArtwork() {
+            var random = Math.random() * 100;
+            var cumulativeProbability = 0;
+            
+            for (var i = 0; i < artworks.length; i++) {
+                cumulativeProbability += artworks[i].probability;
+                if (random <= cumulativeProbability) {
+                    var artwork = {};
+                    // 复制对象属性（兼容旧浏览器）
+                    for (var key in artworks[i]) {
+                        artwork[key] = artworks[i][key];
+                    }
+                    artwork.obtainedAt = new Date().toISOString();
+                    return artwork;
+                }
+            }
+            
+            // 默认返回最后一个
+            var lastArtwork = artworks[artworks.length - 1];
+            var artwork = {};
+            for (var key in lastArtwork) {
+                artwork[key] = lastArtwork[key];
+            }
+            artwork.obtainedAt = new Date().toISOString();
+            return artwork;
+        }
+        
+        // 显示结果
+        function showResult(artwork) {
+            var title = '🎉 恭喜获得创意！';
+            
+            switch(artwork.rarity) {
+                case 'mythic':
+                    title = '🌟 传奇降临！神话级创意！';
+                    break;
+                case 'legendary':
+                    title = '✨ 传说级创意！';
+                    break;
+                case 'epic':
+                    title = '💜 史诗级创意！';
+                    break;
+                case 'rare':
+                    title = '💙 稀有创意！';
+                    break;
+                default:
+                    title = '🎨 获得创意作品！';
+            }
+            
+            document.getElementById('result-title').textContent = title;
+            document.getElementById('result-content').innerHTML = 
+                '<div style="font-size: 80px; margin: 20px 0;">' + artwork.icon + '</div>' +
+                '<h3>' + artwork.name + '</h3>' +
+                '<span class="rarity rarity-' + artwork.rarity + '">' + rarityText[artwork.rarity] + '</span>';
+            
+            document.getElementById('result-modal').classList.add('show');
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('result-modal').classList.remove('show');
+        }
+        
+        // 显示收藏
+        function displayCollection() {
+            var collection = document.getElementById('collection');
+            
+            if (gameState.collection.length === 0) {
+                collection.innerHTML = 
+                    '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">' +
+                    '<div style="font-size: 60px; margin-bottom: 20px;">🖼️</div>' +
+                    '<h3>暂无收藏</h3>' +
+                    '<p>去开箱获得您的第一个创意作品吧！</p>' +
+                    '</div>';
+                return;
+            }
+            
+            var html = '';
+            for (var i = 0; i < gameState.collection.length; i++) {
+                var artwork = gameState.collection[i];
+                html += 
+                    '<div class="artwork-item">' +
+                    '<div class="artwork-icon">' + artwork.icon + '</div>' +
+                    '<div class="artwork-name">' + artwork.name + '</div>' +
+                    '<span class="rarity rarity-' + artwork.rarity + '">' + rarityText[artwork.rarity] + '</span>' +
+                    '</div>';
+            }
+            collection.innerHTML = html;
+        }
+        
+        // 更新UI
+        function updateUI() {
+            document.getElementById('tickets').textContent = gameState.tickets;
+            document.getElementById('click-count').textContent = gameState.clickCount;
+            document.getElementById('progress-text').textContent = gameState.clickProgress + '/100';
+            document.getElementById('collection-count').textContent = gameState.collection.length;
+            
+            // 更新进度条
+            var progressPercent = (gameState.clickProgress / 100) * 100;
+            document.getElementById('progress').style.width = progressPercent + '%';
+            
+            // 更新开箱按钮状态
+            var openBtn = document.getElementById('open-btn');
+            if (gameState.tickets <= 0) {
+                openBtn.disabled = true;
+                openBtn.textContent = '🔒 没有钥匙了';
+            } else {
+                openBtn.disabled = false;
+                openBtn.textContent = '🔓 开启宝箱 (消耗1把钥匙)';
+            }
+        }
+        
+        // 显示通知
+        function showNotification(message) {
+            var notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 保存游戏状态
+        function saveGameState() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('legacyGameState', JSON.stringify(gameState));
+                }
+            } catch (e) {
+                console.log('无法保存游戏状态:', e);
+            }
+        }
+        
+        // 加载游戏状态
+        function loadGameState() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    var saved = localStorage.getItem('legacyGameState');
+                    if (saved) {
+                        var savedState = JSON.parse(saved);
+                        // 合并保存的状态
+                        for (var key in savedState) {
+                            gameState[key] = savedState[key];
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('无法加载游戏状态:', e);
+            }
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            console.log('初始化兼容版本游戏');
+            loadGameState();
+            updateUI();
+            showNotification('🎨 欢迎来到创作中的艺术家！');
+        }
+        
+        // 页面加载完成后初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initGame);
+        } else {
+            initGame();
+        }
+        
+        // 点击弹窗背景关闭
+        document.getElementById('result-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        console.log('兼容版本游戏已加载');
+    </script>
+</body>
+</html>

@@ -1856,12 +1856,22 @@ body:has(.status-bar.transparent) .user-info .user-name {
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    cursor: pointer;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="24" font-size="24">🗝️</text></svg>'), pointer;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .icon-crate:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+}
+
+.icon-crate.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.icon-crate.disabled:hover {
+    transform: none;
 }
 
 .crate-icon {
@@ -1871,8 +1881,12 @@ body:has(.status-bar.transparent) .user-info .user-name {
 }
 
 .icon-crate:hover .crate-icon {
-    transform: rotate(5deg);
-    filter: drop-shadow(0 15px 40px rgba(0,0,0,0.4));
+    transform: rotate(3deg);
+    filter: drop-shadow(0 20px 50px rgba(255, 215, 0, 0.6));
+}
+
+.icon-crate.disabled .crate-icon {
+    filter: drop-shadow(0 15px 40px rgba(0,0,0,0.4)) grayscale(1);
 }
 
 /* 钥匙动画 */
@@ -2215,45 +2229,46 @@ body:has(.status-bar.transparent) .user-info .user-name {
     color: #ecf0f1;
 }
 
+/* 隐藏开箱按钮，改为宝箱本身可点击 */
 .mega-open-btn {
+    display: none;
+}
+
+/* 宝箱点击提示 */
+.crate-click-hint {
     position: absolute;
-    bottom: 100px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 20px 40px;
-    border: none;
-    border-radius: 25px;
-    background: linear-gradient(45deg, #e74c3c, #c0392b);
-    color: white;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.crate-click-hint.show {
+    opacity: 1;
+    animation: hintPulse 2s ease-in-out infinite;
+}
+
+.crate-click-hint-icon {
     font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
-    z-index: 10;
 }
 
-.mega-open-btn:hover {
-    transform: translateX(-50%) translateY(-5px);
-    box-shadow: 0 15px 40px rgba(231, 76, 60, 0.6);
-}
-
-.mega-open-btn:disabled {
-    background: #7f8c8d;
-    cursor: not-allowed;
-    transform: translateX(-50%);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.mega-open-btn .btn-icon {
-    font-size: 24px;
-}
-
-.mega-open-btn .btn-text {
-    font-size: 18px;
+@keyframes hintPulse {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.05); }
 }
 
 /* CS风格滚动区域 - 全屏 */
@@ -4188,6 +4203,28 @@ body:has(.status-bar.transparent) .user-info .user-name {
 .close-expanded-btn:hover {
     background: rgba(138, 43, 226, 1);
     transform: scale(1.1);
+}
+
+.tap-to-close-hint {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    opacity: 0.8;
+    pointer-events: none;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: hintFade 3s ease-in-out infinite;
+}
+
+@keyframes hintFade {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.9; }
 }
 
 @keyframes overlayFadeIn {

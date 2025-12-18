@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创作中的艺术家 - 选择版本</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .version-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .version-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .version-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .version-card.recommended {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .version-card.recommended::before {
+            content: "⭐ 推荐";
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .version-card {
+            position: relative;
+        }
+        
+        .card-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .card-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .card-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+        
+        .card-features li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .card-features li::before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+        
+        .card-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .compatibility-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .browser-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .browser-icon {
+            font-size: 2em;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .browser-icon:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .help-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+        
+        .help-button {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .help-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .version-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .browser-icons {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 创作中的艺术家</h1>
+            <p>选择适合您浏览器的游戏版本</p>
+        </div>
+        
+        <div class="version-cards">
+            <!-- 兼容版本 -->
+            <div class="version-card recommended" onclick="startCompatibleVersion()">
+                <div class="card-icon">🛡️</div>
+                <div class="card-title">兼容版本</div>
+                <div class="card-description">
+                    专为旧版浏览器优化，使用ES5语法，确保在各种环境下都能正常运行。
+                </div>
+                <ul class="card-features">
+                    <li>支持IE9+及所有现代浏览器</li>
+                    <li>完整的游戏核心功能</li>
+                    <li>优化的性能表现</li>
+                    <li>简洁的用户界面</li>
+                    <li>立即可用，无需升级</li>
+                </ul>
+                <button class="card-button">🚀 立即开始游戏</button>
+            </div>
+            
+            <!-- 现代版本 -->
+            <div class="version-card" onclick="startModernVersion()">
+                <div class="card-icon">⚡</div>
+                <div class="card-title">现代版本</div>
+                <div class="card-description">
+                    使用最新的Web技术，提供完整功能和最佳体验。需要现代浏览器支持。
+                </div>
+                <ul class="card-features">
+                    <li>完整的游戏功能</li>
+                    <li>精美的动画效果</li>
+                    <li>卡片展开交互</li>
+                    <li>每日任务系统</li>
+                    <li>高级视觉效果</li>
+                </ul>
+                <button class="card-button">🎮 体验完整版</button>
+            </div>
+        </div>
+        
+        <div class="compatibility-info">
+            <h3>🌐 浏览器兼容性</h3>
+            <div class="browser-icons">
+                <div class="browser-icon" title="Chrome 30+">🟢</div>
+                <div class="browser-icon" title="Firefox 25+">🟠</div>
+                <div class="browser-icon" title="Safari 7+">🔵</div>
+                <div class="browser-icon" title="Edge 所有版本">🟣</div>
+                <div class="browser-icon" title="IE 9+">🔷</div>
+            </div>
+            <p>兼容版本支持上述所有浏览器，现代版本需要较新的浏览器版本</p>
+        </div>
+        
+        <div class="help-section">
+            <h3>🤔 需要帮助？</h3>
+            <p>如果您不确定选择哪个版本，或遇到任何问题：</p>
+            <div style="margin-top: 15px;">
+                <button class="help-button" onclick="checkCompatibility()">🔍 检查兼容性</button>
+                <button class="help-button" onclick="viewGuide()">📖 查看指南</button>
+                <button class="help-button" onclick="runDiagnostic()">🧪 运行诊断</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 启动兼容版本
+        function startCompatibleVersion() {
+            window.location.href = 'legacy-compatible.html';
+        }
+        
+        // 启动现代版本
+        function startModernVersion() {
+            // 先检查浏览器兼容性
+            if (checkBrowserSupport()) {
+                window.location.href = 'index.html';
+            } else {
+                if (confirm('检测到您的浏览器可能不支持现代版本的所有功能。\n\n是否仍要尝试？建议选择兼容版本以获得最佳体验。')) {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+        
+        // 检查浏览器支持
+        function checkBrowserSupport() {
+            try {
+                // 检查ES6功能
+                eval('const x = () => true; let y = `template`; return x() && y === "template"');
+                
+                // 检查其他现代功能
+                return typeof Promise !== 'undefined' && 
+                       typeof fetch !== 'undefined' &&
+                       typeof localStorage !== 'undefined';
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // 检查兼容性
+        function checkCompatibility() {
+            window.open('quick-fix.html', '_blank');
+        }
+        
+        // 查看指南
+        function viewGuide() {
+            window.open('BROWSER_COMPATIBILITY.md', '_blank');
+        }
+        
+        // 运行诊断
+        function runDiagnostic() {
+            window.open('debug-test.html', '_blank');
+        }
+        
+        // 页面加载时自动检测
+        window.addEventListener('load', function() {
+            var isModernBrowser = checkBrowserSupport();
+            
+            if (!isModernBrowser) {
+                // 如果是旧浏览器，高亮推荐兼容版本
+                var compatibleCard = document.querySelector('.version-card.recommended');
+                compatibleCard.style.animation = 'pulse 2s infinite';
+                
+                // 添加脉冲动画
+                var style = document.createElement('style');
+                style.textContent = `
+                    @keyframes pulse {
+                        0% { transform: scale(1); }
+                        50% { transform: scale(1.05); }
+                        100% { transform: scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 显示提示
+                setTimeout(function() {
+                    alert('检测到您的浏览器版本较旧，推荐使用兼容版本以获得最佳体验！');
+                }, 1000);
+            }
+        });
+        
+        console.log('游戏启动页面已加载');
+        console.log('浏览器兼容性:', checkBrowserSupport() ? '现代浏览器' : '需要兼容版本');
+    </script>
+</body>
+</html>

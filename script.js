@@ -188,14 +188,18 @@ function initGame() {
     if (mobileGachaBtn) mobileGachaBtn.addEventListener('click', () => switchScreen('gacha'));
     if (mobileGalleryBtn) mobileGalleryBtn.addEventListener('click', () => switchScreen('gallery'));
     
-    // 宝箱点击效果
+    // 宝箱点击效果和开箱功能
     if (elements.treasureChest) {
         elements.treasureChest.addEventListener('click', () => {
             if (gameState.tickets > 0 && !gameState.isOpening) {
+                // 播放点击动画
                 elements.treasureChest.style.animation = 'iconBounce 0.6s ease';
                 setTimeout(() => {
                     elements.treasureChest.style.animation = '';
                 }, 600);
+                
+                // 实际执行开箱
+                performGacha();
             }
         });
     }
@@ -328,7 +332,9 @@ function updateUI() {
     }
     
     // 更新按钮状态
-    elements.gachaBtn.disabled = gameState.tickets <= 0 || gameState.isOpening;
+    if (elements.gachaBtn) {
+        elements.gachaBtn.disabled = gameState.tickets <= 0 || gameState.isOpening;
+    }
     
     // 更新统计信息
     if (elements.totalArtworks) {
@@ -548,10 +554,13 @@ function performGacha() {
     gameState.isOpening = true;
     
     // 第一阶段：宝箱开启动画
-    elements.gachaBtn.innerHTML = `
-        <span class="button-text">🔓 开启中...</span>
-        <span class="button-cost">请稍候</span>
-    `;
+    // 注意：gachaBtn可能不存在，所以需要检查
+    if (elements.gachaBtn) {
+        elements.gachaBtn.innerHTML = `
+            <span class="button-text">🔓 开启中...</span>
+            <span class="button-cost">请稍候</span>
+        `;
+    }
     
     // 开始开箱动画序列
     startCrateOpeningAnimation();
@@ -1074,6 +1083,8 @@ function createFlashEffect(element, intense = false) {
 
 // 卡片展开到页面中心的动画
 function showCardExpansion(cardElement, artwork) {
+    console.log('展开卡片:', artwork.name);
+    
     // 获取卡片的当前位置
     const rect = cardElement.getBoundingClientRect();
     
@@ -1081,7 +1092,7 @@ function showCardExpansion(cardElement, artwork) {
     const expandedCard = document.createElement('div');
     expandedCard.className = 'expanded-card-overlay';
     expandedCard.innerHTML = `
-        <div class="expanded-card-backdrop" onclick="closeExpandedCard()"></div>
+        <div class="expanded-card-backdrop"></div>
         <div class="expanded-card-content" id="expanded-card">
             <div class="expanded-card-header">
                 <div class="expanded-icon">${artwork.icon}</div>
@@ -1103,11 +1114,11 @@ function showCardExpansion(cardElement, artwork) {
                         <span class="detail-value">${getThoughtType(artwork.rarity)}</span>
                     </div>
                 </div>
-
             </div>
-            <button class="close-expanded-btn" onclick="closeExpandedCard()">
+            <button class="close-expanded-btn">
                 <span>✕</span>
             </button>
+            <div class="tap-to-close-hint">点击任意位置关闭</div>
         </div>
     `;
     
@@ -1163,25 +1174,86 @@ function showCardExpansion(cardElement, artwork) {
         }
     }, 50);
     
+    // 添加事件监听器
+    const backdrop = expandedCard.querySelector('.expanded-card-backdrop');
+    const closeBtn = expandedCard.querySelector('.close-expanded-btn');
+    
+    // 点击背景关闭
+    if (backdrop) {
+        backdrop.addEventListener('click', closeExpandedCard);
+    }
+    
+    // 点击关闭按钮
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeExpandedCard);
+    }
+    
+    // 点击卡片内容也可以关闭 - 用户要求点击任意位置都能关闭
+    expandedCard.addEventListener('click', (e) => {
+        // 阻止关闭按钮的事件冒泡，其他任何地方都可以关闭
+        if (!e.target.classList.contains('close-expanded-btn')) {
+            closeExpandedCard();
+        }
+    });
+    
+    // 添加触摸事件支持（移动端）
+    expandedCard.addEventListener('touchstart', (e) => {
+        // 阻止关闭按钮的事件冒泡，其他任何地方都可以关闭
+        if (!e.target.classList.contains('close-expanded-btn')) {
+            closeExpandedCard();
+        }
+    });
+    
+    // ESC键关闭
+    const handleKeyPress = (e) => {
+        if (e.key === 'Escape') {
+            closeExpandedCard();
+            document.removeEventListener('keydown', handleKeyPress);
+        }
+    };
+    document.addEventListener('keydown', handleKeyPress);
+    
+    // 将键盘事件处理器存储到卡片元素上，以便在关闭时清理
+    expandedCard._keyHandler = handleKeyPress;
+    
     // 为稀有卡片添加特效
     if (artwork.rarity !== 'common') {
         setTimeout(() => {
             showArtworkEffect(expandedCardContent, artwork);
         }, 600);
     }
+    
+    console.log('卡片展开完成，已添加关闭事件监听器');
 }
 
 // 关闭展开的卡片
 function closeExpandedCard() {
+    console.log('关闭展开的卡片');
     const expandedCard = document.querySelector('.expanded-card-overlay');
     if (expandedCard) {
         const cardContent = expandedCard.querySelector('.expanded-card-content');
-        cardContent.style.transform = 'scale(0)';
-        cardContent.style.opacity = '0';
+        if (cardContent) {
+            cardContent.style.transform = 'scale(0)';
+            cardContent.style.opacity = '0';
+        }
+        
+        // 移除键盘事件监听器
+        if (expandedCard._keyHandler) {
+            document.removeEventListener('keydown', expandedCard._keyHandler);
+        }
         
         setTimeout(() => {
-            document.body.removeChild(expandedCard);
+            try {
+                if (expandedCard && expandedCard.parentNode) {
+                    expandedCard.parentNode.removeChild(expandedCard);
+                    console.log('卡片已成功关闭并移除');
+                }
+            } catch (error) {
+                console.error('关闭卡片时出错:', error);
+            }
         }, 300);
+    } else {
+        console.log('未找到展开的卡片');
     }
 }
 

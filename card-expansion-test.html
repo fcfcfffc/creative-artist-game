@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡片展开功能测试</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 70%, #1a1a2e 100%);
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .test-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .test-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 2px solid rgba(138, 43, 226, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .test-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(138, 43, 226, 0.5);
+        }
+        .test-card .artwork-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        .test-card .artwork-name {
+            color: #e6e6fa;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .test-card .artwork-rarity {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            color: white;
+        }
+        .test-instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 卡片展开功能测试</h1>
+            <p>点击任意卡片测试展开和关闭功能</p>
+        </div>
+        
+        <div class="test-instructions">
+            <h3>测试说明：</h3>
+            <ul>
+                <li>✅ 点击卡片应该展开到页面中心</li>
+                <li>✅ 点击背景应该关闭卡片</li>
+                <li>✅ 点击关闭按钮应该关闭卡片</li>
+                <li>✅ 点击卡片内容区域应该关闭卡片</li>
+                <li>✅ 按ESC键应该关闭卡片</li>
+                <li>✅ 移动端触摸事件应该正常工作</li>
+                <li>✅ 提示文字应该显示并有淡入淡出动画</li>
+            </ul>
+        </div>
+        
+        <div class="test-gallery">
+            <div class="test-card" data-rarity="mythic">
+                <div class="artwork-icon">👸</div>
+                <div class="artwork-name">蒙娜丽莎</div>
+                <span class="artwork-rarity rarity-mythic">神话</span>
+            </div>
+            
+            <div class="test-card" data-rarity="legendary">
+                <div class="artwork-icon">🌌</div>
+                <div class="artwork-name">星夜</div>
+                <span class="artwork-rarity rarity-legendary">传说</span>
+            </div>
+            
+            <div class="test-card" data-rarity="epic">
+                <div class="artwork-icon">🗿</div>
+                <div class="artwork-name">大卫像</div>
+                <span class="artwork-rarity rarity-epic">史诗</span>
+            </div>
+            
+            <div class="test-card" data-rarity="rare">
+                <div class="artwork-icon">🗽</div>
+                <div class="artwork-name">自由女神</div>
+                <span class="artwork-rarity rarity-rare">稀有</span>
+            </div>
+            
+            <div class="test-card" data-rarity="common">
+                <div class="artwork-icon">🎨</div>
+                <div class="artwork-name">抽象画A</div>
+                <span class="artwork-rarity rarity-common">普通</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 测试数据
+        const testArtworks = [
+            { id: 1, name: "蒙娜丽莎", rarity: "mythic", icon: "👸", obtainedAt: new Date().toISOString() },
+            { id: 2, name: "星夜", rarity: "legendary", icon: "🌌", obtainedAt: new Date().toISOString() },
+            { id: 3, name: "大卫像", rarity: "epic", icon: "🗿", obtainedAt: new Date().toISOString() },
+            { id: 4, name: "自由女神", rarity: "rare", icon: "🗽", obtainedAt: new Date().toISOString() },
+            { id: 5, name: "抽象画A", rarity: "common", icon: "🎨", obtainedAt: new Date().toISOString() }
+        ];
+        
+        // 等待页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('测试页面加载完成');
+            
+            // 为每个测试卡片添加点击事件
+            const testCards = document.querySelectorAll('.test-card');
+            testCards.forEach((card, index) => {
+                const artwork = testArtworks[index];
+                card.addEventListener('click', () => {
+                    console.log('点击测试卡片:', artwork.name);
+                    showCardExpansion(card, artwork);
+                });
+            });
+            
+            console.log('已为', testCards.length, '个卡片添加点击事件');
+        });
+        
+        // 测试函数
+        window.testCardExpansion = function() {
+            const firstCard = document.querySelector('.test-card');
+            const firstArtwork = testArtworks[0];
+            if (firstCard && firstArtwork) {
+                console.log('手动测试卡片展开');
+                showCardExpansion(firstCard, firstArtwork);
+            }
+        };
+        
+        console.log('卡片展开测试页面已准备就绪');
+        console.log('可以在控制台运行 testCardExpansion() 进行手动测试');
+    </script>
+</body>
+</html>

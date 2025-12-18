@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝箱点击功能测试</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .test-instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .test-chest-area {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .test-status {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .status-item {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 宝箱点击功能测试</h1>
+            <p>测试宝箱是否能正确响应点击并开启</p>
+        </div>
+        
+        <div class="test-instructions">
+            <h3>测试说明：</h3>
+            <ul>
+                <li>✅ 点击宝箱应该播放动画</li>
+                <li>✅ 点击宝箱应该调用开箱函数</li>
+                <li>✅ 有钥匙时应该能开箱</li>
+                <li>✅ 没钥匙时应该无法开箱</li>
+                <li>✅ 开箱过程中应该无法重复开箱</li>
+            </ul>
+        </div>
+        
+        <div class="test-chest-area">
+            <h2>🗝️ 当前钥匙数量: <span id="test-tickets">3</span></h2>
+            
+            <!-- 模拟宝箱 -->
+            <div id="treasure-chest" style="cursor: pointer; font-size: 100px; margin: 20px 0;">
+                <div class="crate-icon" id="crate-icon">📦</div>
+            </div>
+            
+            <p>点击上方宝箱测试开箱功能</p>
+            
+            <div class="test-status">
+                <div class="status-item">状态: <span id="test-status">等待点击</span></div>
+                <div class="status-item">最后操作: <span id="last-action">无</span></div>
+                <div class="status-item">开箱次数: <span id="open-count">0</span></div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="resetTest()" style="padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; background: #3498db; color: white; cursor: pointer;">重置测试</button>
+            <button onclick="addTickets()" style="padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; background: #27ae60; color: white; cursor: pointer;">添加钥匙</button>
+            <button onclick="removeTickets()" style="padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; background: #e74c3c; color: white; cursor: pointer;">移除钥匙</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        let testOpenCount = 0;
+        
+        // 重写performGacha函数用于测试
+        const originalPerformGacha = window.performGacha || function() {};
+        
+        window.performGacha = function() {
+            testOpenCount++;
+            document.getElementById('test-status').textContent = '开箱中...';
+            document.getElementById('last-action').textContent = '调用了performGacha()';
+            document.getElementById('open-count').textContent = testOpenCount;
+            
+            console.log('测试: performGacha被调用，开箱次数:', testOpenCount);
+            
+            // 模拟开箱过程
+            setTimeout(() => {
+                document.getElementById('test-status').textContent = '开箱完成';
+                gameState.isOpening = false;
+            }, 2000);
+            
+            // 调用原始函数（如果存在）
+            if (originalPerformGacha && typeof originalPerformGacha === 'function') {
+                try {
+                    originalPerformGacha();
+                } catch (error) {
+                    console.log('原始performGacha函数执行出错:', error);
+                }
+            }
+        };
+        
+        // 测试辅助函数
+        function resetTest() {
+            testOpenCount = 0;
+            gameState.tickets = 3;
+            gameState.isOpening = false;
+            document.getElementById('test-tickets').textContent = gameState.tickets;
+            document.getElementById('test-status').textContent = '等待点击';
+            document.getElementById('last-action').textContent = '重置测试';
+            document.getElementById('open-count').textContent = testOpenCount;
+            console.log('测试已重置');
+        }
+        
+        function addTickets() {
+            gameState.tickets += 1;
+            document.getElementById('test-tickets').textContent = gameState.tickets;
+            document.getElementById('last-action').textContent = '添加了1把钥匙';
+            console.log('添加钥匙，当前:', gameState.tickets);
+        }
+        
+        function removeTickets() {
+            if (gameState.tickets > 0) {
+                gameState.tickets -= 1;
+                document.getElementById('test-tickets').textContent = gameState.tickets;
+                document.getElementById('last-action').textContent = '移除了1把钥匙';
+                console.log('移除钥匙，当前:', gameState.tickets);
+            }
+        }
+        
+        // 监听宝箱点击
+        document.addEventListener('DOMContentLoaded', function() {
+            const treasureChest = document.getElementById('treasure-chest');
+            if (treasureChest) {
+                console.log('宝箱元素找到，添加测试监听器');
+                
+                // 添加额外的测试监听器
+                treasureChest.addEventListener('click', function() {
+                    console.log('测试: 宝箱被点击');
+                    document.getElementById('last-action').textContent = '点击了宝箱';
+                    
+                    if (gameState.tickets <= 0) {
+                        document.getElementById('test-status').textContent = '没有钥匙';
+                        console.log('测试: 没有钥匙，无法开箱');
+                    } else if (gameState.isOpening) {
+                        document.getElementById('test-status').textContent = '正在开箱中';
+                        console.log('测试: 正在开箱中，无法重复开箱');
+                    } else {
+                        document.getElementById('test-status').textContent = '点击成功';
+                        console.log('测试: 点击条件满足，应该会开箱');
+                    }
+                });
+            } else {
+                console.error('测试: 未找到宝箱元素');
+            }
+        });
+        
+        console.log('宝箱点击测试页面已准备就绪');
+    </script>
+</body>
+</html>

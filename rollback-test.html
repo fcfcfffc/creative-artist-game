@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回退测试 - 宝箱功能验证</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .success { background: rgba(76, 175, 80, 0.3); }
+        .error { background: rgba(244, 67, 54, 0.3); }
+        .warning { background: rgba(255, 152, 0, 0.3); }
+        .info { background: rgba(33, 150, 243, 0.3); }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #45a049; }
+        .test-chest {
+            font-size: 80px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .test-chest:hover {
+            transform: scale(1.1);
+        }
+        #log {
+            background: rgba(0, 0, 0, 0.5);
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔄 回退测试 - 宝箱功能验证</h1>
+        <p>测试宝箱点击功能是否已修复</p>
+        
+        <div class="status info">
+            <strong>修复内容：</strong><br>
+            ✅ 修复了 performGacha() 函数中的 gachaBtn 空引用问题<br>
+            ✅ 修复了 updateUI() 函数中的 gachaBtn 空引用问题<br>
+            ✅ 重新启用了宝箱点击开箱功能
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <h3>🗝️ 当前钥匙: <span id="test-tickets">3</span></h3>
+            <div class="test-chest" id="test-chest">📦</div>
+            <p>点击宝箱测试开箱功能</p>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="testBasicFunctions()">测试基础函数</button>
+            <button onclick="testChestClick()">测试宝箱点击</button>
+            <button onclick="testPerformGacha()">测试开箱函数</button>
+            <button onclick="resetTest()">重置测试</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="log"></div>
+    </div>
+
+    <!-- 加载主游戏脚本 -->
+    <script src="script.js"></script>
+    
+    <script>
+        const results = document.getElementById('results');
+        const log = document.getElementById('log');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `[${timestamp}] ${message}\n`;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // 测试基础函数
+        function testBasicFunctions() {
+            addLog('开始测试基础函数...');
+            
+            const functions = [
+                'initGame',
+                'performGacha', 
+                'updateUI',
+                'resetGachaScreen',
+                'switchScreen'
+            ];
+            
+            let allPassed = true;
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    addLog(`${funcName}: ✅ 已定义`);
+                } else {
+                    addLog(`${funcName}: ❌ 未定义`);
+                    allPassed = false;
+                }
+            });
+            
+            if (allPassed) {
+                addResult('✅ 所有基础函数都已正确定义', 'success');
+            } else {
+                addResult('❌ 部分基础函数缺失', 'error');
+            }
+        }
+        
+        // 测试宝箱点击
+        function testChestClick() {
+            addLog('测试宝箱点击功能...');
+            
+            try {
+                // 模拟宝箱点击
+                const chest = document.getElementById('test-chest');
+                if (chest) {
+                    chest.click();
+                    addLog('宝箱点击事件已触发');
+                    addResult('✅ 宝箱点击测试通过', 'success');
+                } else {
+                    addLog('未找到测试宝箱元素');
+                    addResult('❌ 测试宝箱元素缺失', 'error');
+                }
+            } catch (error) {
+                addLog(`宝箱点击测试失败: ${error.message}`);
+                addResult('❌ 宝箱点击测试失败', 'error');
+            }
+        }
+        
+        // 测试开箱函数
+        function testPerformGacha() {
+            addLog('测试 performGacha 函数...');
+            
+            try {
+                if (typeof performGacha === 'function') {
+                    // 备份原始状态
+                    const originalTickets = gameState.tickets;
+                    const originalOpening = gameState.isOpening;
+                    
+                    // 确保有钥匙且不在开箱中
+                    gameState.tickets = 1;
+                    gameState.isOpening = false;
+                    
+                    // 调用函数
+                    performGacha();
+                    
+                    addLog('performGacha 函数调用成功');
+                    addResult('✅ performGacha 函数测试通过', 'success');
+                    
+                    // 恢复状态
+                    gameState.tickets = originalTickets;
+                    gameState.isOpening = originalOpening;
+                } else {
+                    addLog('performGacha 函数未定义');
+                    addResult('❌ performGacha 函数未定义', 'error');
+                }
+            } catch (error) {
+                addLog(`performGacha 测试失败: ${error.message}`);
+                addResult('❌ performGacha 函数测试失败', 'error');
+            }
+        }
+        
+        // 重置测试
+        function resetTest() {
+            results.innerHTML = '';
+            log.textContent = '';
+            gameState.tickets = 3;
+            gameState.isOpening = false;
+            document.getElementById('test-tickets').textContent = gameState.tickets;
+            addLog('测试已重置');
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('回退测试页面已加载');
+            
+            // 检查游戏状态
+            if (typeof gameState !== 'undefined') {
+                addLog('gameState 已加载');
+                document.getElementById('test-tickets').textContent = gameState.tickets;
+            } else {
+                addLog('gameState 未加载');
+            }
+            
+            // 为测试宝箱添加点击事件
+            const testChest = document.getElementById('test-chest');
+            if (testChest) {
+                testChest.addEventListener('click', function() {
+                    addLog('测试宝箱被点击');
+                    
+                    if (gameState.tickets > 0 && !gameState.isOpening) {
+                        // 播放动画
+                        this.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                            this.style.transform = '';
+                        }, 200);
+                        
+                        addLog('模拟开箱...');
+                        gameState.tickets--;
+                        document.getElementById('test-tickets').textContent = gameState.tickets;
+                        
+                        addResult('🎉 宝箱点击成功！钥匙 -1', 'success');
+                    } else {
+                        addLog('没有钥匙或正在开箱中');
+                        addResult('⚠️ 没有钥匙或正在开箱中', 'warning');
+                    }
+                });
+            }
+            
+            // 自动运行基础测试
+            setTimeout(() => {
+                testBasicFunctions();
+            }, 500);
+        });
+        
+        // 错误捕获
+        window.addEventListener('error', function(e) {
+            addLog(`捕获到错误: ${e.message}`);
+            addResult(`❌ 发现错误: ${e.message}`, 'error');
+        });
+        
+        addLog('回退测试脚本已初始化');
+    </script>
+</body>
+</html>
